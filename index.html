@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Hash Mark — Markdown, made readable." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Hash Mark</title>
+    <script>
+      // Set the theme before first paint to avoid a flash. Mirrors src/features/theme/theme.ts.
+      (function () {
+        var t = null;
+        try {
+          t = localStorage.getItem('hash-mark:theme');
+        } catch (e) {}
+        if (t !== 'light' && t !== 'dark') {
+          t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = t;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

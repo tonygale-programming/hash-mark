@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+coverage
+*.local
+.DS_Store
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Local tool config
+.claude/launch.json
+.claude/settings.local.json

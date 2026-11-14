@@ -1,0 +1,11 @@
+.toggle__glyph {
+  font: var(--type-label);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.toggle[aria-pressed='true'],
+.toggle[aria-pressed='true']:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-text);
+}

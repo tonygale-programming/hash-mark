@@ -1,0 +1,18 @@
+.shortcut {
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 var(--space-4);
+  border: var(--border-width) solid var(--border-subtle);
+  border-radius: var(--radius-small);
+  background: var(--surface);
+  color: var(--text);
+  font: var(--type-kbd);
+}

@@ -1,0 +1,43 @@
+.tooltip-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip {
+  position: absolute;
+  top: calc(100% + var(--space-8));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-small);
+  background: var(--primary);
+  color: var(--primary-text);
+  font: var(--type-hint);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltip[hidden] {
+  display: none;
+}
+
+.tooltip--center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.tooltip--start {
+  left: 0;
+}
+
+.tooltip--end {
+  right: 0;
+}
+
+.tooltip .keycap {
+  border-color: currentColor;
+  background: transparent;
+  color: inherit;
+}

@@ -1,0 +1,63 @@
+.btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  height: var(--control-height);
+  padding: 0 var(--space-12);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font: var(--type-label);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--motion);
+}
+
+.btn--outline {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.btn--has-icon {
+  padding-inline-start: var(--space-8);
+}
+
+.btn--icon-only {
+  width: var(--control-height);
+  padding: 0;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.icon {
+  flex: none;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+@media (max-width: 599.98px) {
+  .btn--collapse-label {
+    width: var(--control-height);
+    padding: 0;
+  }
+
+  .btn--collapse-label .btn__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
