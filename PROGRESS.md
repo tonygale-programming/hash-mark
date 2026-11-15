@@ -12,7 +12,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [x] Dexie store: notes {id, title, markdown, updatedAt}; New note, list, select, search, delete
 - [x] CodeMirror 6 editor (Markdown + GFM), autosave with "Saved" chip
 - [x] Read mode via unified pipeline (sanitized)
-- [ ] Open .md file (file picker + drag & drop), Download .md, Copy
+- [x] Open .md file (file picker + drag & drop), Download .md, Copy
 - [ ] Status bar stats (words, read time, headings)
 
 ## M2 — Writing help
@@ -38,8 +38,8 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M1 — Open .md file (file picker + drag & drop), Download .md, Copy. Buttons exist (Toolbar "Open file",
-StatusBar "Download" / "Copy") but are not wired.
+M1 — Status bar stats (words, read time, headings). `StatusBar` already takes a `stats` prop
+(`DocStats`); compute it from the live `markdown` in `AppShell`. This is the last M1 item.
 
 ## Notes
 - Notes live in IndexedDB `hash-mark` (Dexie, `src/features/notes/db.ts`). The title is derived from the first
@@ -63,7 +63,13 @@ StatusBar "Download" / "Copy") but are not wired.
   `<kbd>` etc. would need rehype-raw, not in the allowed list). External links open in a new tab; footnote
   links scroll in place and never change the URL fragment (reserved for share links). Remote images load
   lazily with no referrer. ReadView is lazy-loaded and also used for the right side of Split.
-- Not wired yet: Open file, Share link, Shortcuts, Download, Copy.
+- Files: `src/features/files/`. Open file (picker, several at once) and drag & drop anywhere on the window
+  create one note per file; the last opened is selected. Accepted: .md/.markdown/.mdown/.mkd/.mkdn/.mdwn/.txt
+  and extension-less names (README); binary or > 10 MB files are skipped with a reason. Text is normalized
+  (BOM stripped, CRLF → LF). The drop handler runs in the capture phase and stops CodeMirror's own file drop.
+  Download saves the live text as `<title>.md` (title from the live text); Copy copies the Markdown source.
+- Toast (`src/ui/Toast.tsx`, `useToast`): one message at a time in a polite live region, 4 s (errors 7 s).
+- Not wired yet: Share link, Shortcuts.
 - Repo: https://github.com/tonygale-programming/hash-mark (public). Buy Me a Coffee URL in `src/config.ts` is a placeholder (TODO).
 - Mobile layout (top bar, keyboard toolbar) is not built yet; under 1000px the desktop shell wraps and
   the sidebar becomes a drawer.

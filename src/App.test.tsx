@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { EditorView } from '@codemirror/view';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
@@ -220,6 +220,112 @@ describe('Read mode', () => {
     expect(
       await within(main).findByRole('heading', { level: 2, name: 'Live preview' }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Files', () => {
+  function titles() {
+    return within(sidebar())
+      .getAllByRole('listitem')
+      .map((li) => li.querySelector('.note-list__title')?.textContent);
+  }
+
+  it('opens the file picker from the toolbar', async () => {
+    await renderWithNotes();
+    const input = screen.getByLabelText<HTMLInputElement>('Open Markdown files');
+    const click = vi.spyOn(input, 'click');
+    await userEvent.click(screen.getByRole('button', { name: 'Open file' }));
+    expect(click).toHaveBeenCalled();
+    expect(input).toHaveAttribute('accept', expect.stringContaining('.md'));
+  });
+
+  it('opens picked files as new notes and selects the last one', async () => {
+    await renderWithNotes();
+    await userEvent.upload(screen.getByLabelText('Open Markdown files'), [
+      new File(['# First file'], 'first.md', { type: 'text/markdown' }),
+      new File(['# Second file\n\nBody'], 'second.md', { type: 'text/markdown' }),
+    ]);
+
+    await waitFor(() =>
+      expect(titles()).toEqual(['Second file', 'First file', 'Welcome to Hash Mark']),
+    );
+    expect(within(sidebar()).getByRole('button', { name: /^Second file/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    expect(await screen.findByText('Opened 2 files.')).toBeInTheDocument();
+  });
+
+  it('opens dropped files and skips ones that are not text', async () => {
+    await renderWithNotes();
+    const dataTransfer = {
+      types: ['Files'],
+      files: [
+        new File(['# Dropped'], 'dropped.md', { type: 'text/markdown' }),
+        new File(['x'], 'photo.png', { type: 'image/png' }),
+      ],
+    };
+    fireEvent.dragEnter(window, { dataTransfer });
+    expect(screen.getByText('Drop Markdown files to open them')).toBeInTheDocument();
+    fireEvent.drop(window, { dataTransfer });
+
+    expect(
+      await screen.findByText(
+        'Opened “Dropped”. Couldn’t open “photo.png”: not a Markdown or text file.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Drop Markdown files to open them')).not.toBeInTheDocument();
+    expect(titles()).toEqual(['Dropped', 'Welcome to Hash Mark']);
+  });
+
+  it('downloads the current note as a .md file', async () => {
+    const create = vi.fn<(blob: Blob) => string>(() => 'blob:note');
+    Object.assign(URL, { createObjectURL: create, revokeObjectURL: vi.fn() });
+    const downloads: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      downloads.push(this.download);
+    });
+
+    await renderWithNotes();
+    replaceDoc('# Trip: day 1\n\nUnsaved text');
+    await userEvent.click(screen.getByRole('button', { name: 'Download' }));
+
+    await waitFor(() => expect(downloads).toEqual(['Trip- day 1.md']));
+    expect(await create.mock.calls[0]![0].text()).toBe('# Trip: day 1\n\nUnsaved text');
+    click.mockRestore();
+  });
+
+  it('copies the Markdown and confirms', async () => {
+    const writeText = vi.fn(async () => {});
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('# Welcome to Hash Mark'));
+    expect(await screen.findByText('Copied Markdown')).toBeInTheDocument();
+  });
+
+  it('explains when copying fails', async () => {
+    const writeText = vi.fn(async () => {
+      throw new Error('denied');
+    });
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(
+      await screen.findByText('Couldn’t copy. Select the text and copy it manually.'),
+    ).toBeInTheDocument();
+  });
+
+  it('disables Download and Copy without a note', async () => {
+    await db.notes.clear();
+    render(<App />);
+    expect(
+      await within(screen.getByRole('complementary')).findByText('No notes yet'),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Download' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Copy' })).toBeDisabled();
   });
 });
 

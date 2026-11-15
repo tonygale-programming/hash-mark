@@ -4,5 +4,6 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { Icon } from './Icon';
 export { KeyCap, Shortcut } from './KeyCap';
 export { SegmentedControl, type SegmentOption } from './SegmentedControl';
+export { Toast, useToast, type ToastTone } from './Toast';
 export { Toggle } from './Toggle';
 export { Tooltip } from './Tooltip';

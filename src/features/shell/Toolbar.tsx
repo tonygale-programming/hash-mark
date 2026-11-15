@@ -13,6 +13,7 @@ export type ToolbarProps = {
   onOpenDrawer: () => void;
   drawerButtonRef: Ref<HTMLButtonElement>;
   onNewNote: () => void;
+  onOpenFile: () => void;
 };
 
 export function Toolbar({
@@ -25,6 +26,7 @@ export function Toolbar({
   onOpenDrawer,
   drawerButtonRef,
   onNewNote,
+  onOpenFile,
 }: ToolbarProps) {
   return (
     <div className="toolbar">
@@ -43,7 +45,9 @@ export function Toolbar({
         <Button icon={Plus} onClick={onNewNote}>
           New note
         </Button>
-        <Button icon={FolderOpen}>Open file</Button>
+        <Button icon={FolderOpen} onClick={onOpenFile}>
+          Open file
+        </Button>
         <Tooltip label="Cycle mode" shortcut="Mod+Shift+M">
           <SegmentedControl
             label="Mode"

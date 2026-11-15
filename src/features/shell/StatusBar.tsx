@@ -10,7 +10,15 @@ const SAVE_CHIP = {
   error: { tone: 'danger', label: 'Not saved' },
 } as const;
 
-export function StatusBar({ saveStatus, stats }: { saveStatus?: SaveStatus; stats?: DocStats }) {
+export type StatusBarProps = {
+  saveStatus?: SaveStatus;
+  stats?: DocStats;
+  /** Download and Copy act on the current note; omitted when there is none. */
+  onDownload?: () => void;
+  onCopy?: () => void;
+};
+
+export function StatusBar({ saveStatus, stats, onDownload, onCopy }: StatusBarProps) {
   const chip = saveStatus ? SAVE_CHIP[saveStatus] : null;
   return (
     <footer className="statusbar" aria-label="Document status">
@@ -43,8 +51,12 @@ export function StatusBar({ saveStatus, stats }: { saveStatus?: SaveStatus; stat
         )}
       </div>
       <div className="statusbar__group">
-        <Button icon={Download}>Download</Button>
-        <Button icon={Copy}>Copy</Button>
+        <Button icon={Download} onClick={onDownload} disabled={!onDownload}>
+          Download
+        </Button>
+        <Button icon={Copy} onClick={onCopy} disabled={!onCopy}>
+          Copy
+        </Button>
       </div>
     </footer>
   );

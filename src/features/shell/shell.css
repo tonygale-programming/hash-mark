@@ -298,3 +298,26 @@
     padding: 0;
   }
 }
+
+/* File drop target */
+.drop-overlay {
+  position: fixed;
+  inset: var(--space-8);
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-pane);
+  background: color-mix(in srgb, var(--accent-soft) 88%, transparent);
+  pointer-events: none;
+}
+
+.drop-overlay__label {
+  margin: 0;
+  padding: var(--space-8) var(--space-16);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: var(--type-title);
+}
