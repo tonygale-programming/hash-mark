@@ -6,6 +6,10 @@ import type { Note } from '../notes/db';
 const MarkdownEditor = lazy(() =>
   import('../editor/MarkdownEditor').then((module) => ({ default: module.MarkdownEditor })),
 );
+// The unified pipeline is loaded on demand too; Write mode never needs it.
+const ReadView = lazy(() =>
+  import('../read/ReadView').then((module) => ({ default: module.ReadView })),
+);
 
 export type EditorPaneProps = {
   mode: Mode;
@@ -54,13 +58,10 @@ export function EditorPane({ mode, note, markdown, onChange, autoFocus }: Editor
   );
 }
 
-/** Placeholder until the unified Read pipeline (next M1 item): shows the source. */
 function Preview({ markdown }: { markdown: string }) {
-  return markdown ? (
-    <pre className="doc doc--source">{markdown}</pre>
-  ) : (
-    <div className="doc">
-      <p className="doc__placeholder">Nothing to read yet</p>
-    </div>
+  return (
+    <Suspense fallback={<div className="doc" aria-busy="true" />}>
+      <ReadView markdown={markdown} />
+    </Suspense>
   );
 }

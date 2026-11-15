@@ -1,0 +1,188 @@
+/* Rendered document typography (docs/design-tokens.md, "Document"). */
+.prose {
+  overflow-wrap: break-word;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+.prose :is(p, ul, ol, blockquote, pre, .table-wrap, hr, section) {
+  margin: 0 0 var(--space-16);
+}
+
+.prose h1 {
+  margin: 0 0 var(--space-16);
+  font: var(--doc-h1);
+}
+
+.prose h2 {
+  margin: var(--space-32) 0 var(--space-12);
+  font: var(--doc-h2);
+}
+
+.prose h3 {
+  margin: var(--space-24) 0 var(--space-8);
+  font: var(--doc-h3);
+}
+
+.prose :is(h4, h5, h6) {
+  margin: var(--space-20) 0 var(--space-8);
+  font: var(--doc-body);
+  font-weight: 600;
+}
+
+.prose a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose :is(ul, ol) {
+  padding-left: var(--space-24);
+}
+
+.prose li + li,
+.prose li > :is(ul, ol) {
+  margin-top: var(--space-4);
+}
+
+.prose li > :is(ul, ol) {
+  margin-bottom: 0;
+}
+
+.prose li > p {
+  margin: 0;
+}
+
+.prose .contains-task-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.prose .contains-task-list .contains-task-list {
+  padding-left: var(--space-24);
+}
+
+.prose .task-list-item input {
+  width: 18px;
+  height: 18px;
+  margin: 0 var(--space-8) 0 0;
+  vertical-align: -3px;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-small);
+  background: var(--surface) center / 14px no-repeat;
+  appearance: none;
+  opacity: 1;
+}
+
+.prose .task-list-item input:checked {
+  background-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+.prose blockquote {
+  padding-left: var(--space-16);
+  border-left: 3px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.prose code {
+  padding: 1px 4px;
+  border-radius: var(--radius-small);
+  background: var(--surface-sunken);
+  font: var(--doc-code);
+}
+
+.prose pre {
+  padding: var(--space-12) var(--space-16);
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+
+.prose pre code {
+  padding: 0;
+  background: none;
+}
+
+.prose hr {
+  height: 0;
+  border: 0;
+  border-top: var(--border-width) solid var(--border-subtle);
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+}
+
+.prose .table-wrap {
+  overflow-x: auto;
+}
+
+.prose table {
+  border-collapse: collapse;
+  font: var(--type-body);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.prose :is(th, td) {
+  padding: var(--space-8) var(--space-12);
+  border: var(--border-width) solid var(--border-subtle);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th {
+  background: var(--surface-sunken);
+  font-weight: 600;
+}
+
+.prose th[align='center'],
+.prose td[align='center'] {
+  text-align: center;
+}
+
+.prose th[align='right'],
+.prose td[align='right'] {
+  text-align: right;
+}
+
+.prose .footnotes {
+  padding-top: var(--space-16);
+  border-top: var(--border-width) solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.prose .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.prose :target,
+.prose [tabindex='-1']:focus {
+  outline: none;
+  box-shadow: none;
+}

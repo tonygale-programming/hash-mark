@@ -176,7 +176,7 @@ describe('Editing', () => {
     await renderWithNotes();
     replaceDoc('Fresh words');
     await userEvent.click(screen.getByRole('radio', { name: 'Read' }));
-    expect(screen.getByRole('main')).toHaveTextContent('Fresh words');
+    expect(await within(screen.getByRole('main')).findByText('Fresh words')).toBeInTheDocument();
   });
 
   it('keeps edits when switching notes before the save fires', async () => {
@@ -192,6 +192,34 @@ describe('Editing', () => {
         'Welcome edited',
       ]),
     );
+  });
+});
+
+describe('Read mode', () => {
+  it('renders the note as a document', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('radio', { name: 'Read' }));
+    const main = screen.getByRole('main');
+    expect(
+      await within(main).findByRole('heading', { level: 1, name: 'Welcome to Hash Mark' }),
+    ).toBeInTheDocument();
+    expect(within(main).getByRole('table')).toBeInTheDocument();
+    expect(within(main).getAllByRole('checkbox')).toHaveLength(2);
+    expect(within(main).queryByRole('textbox')).not.toBeInTheDocument();
+    expect(main).not.toHaveTextContent('# Welcome');
+  });
+
+  it('shows the editor and the rendered preview side by side in Split', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('radio', { name: 'Split' }));
+    const main = screen.getByRole('main');
+    expect(await within(main).findByRole('heading', { level: 1 })).toBeInTheDocument();
+    expect(within(main).getByRole('textbox', { name: 'Note' })).toBeInTheDocument();
+
+    replaceDoc('## Live preview');
+    expect(
+      await within(main).findByRole('heading', { level: 2, name: 'Live preview' }),
+    ).toBeInTheDocument();
   });
 });
 

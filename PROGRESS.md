@@ -11,7 +11,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 ## M1 — Notes and editor core
 - [x] Dexie store: notes {id, title, markdown, updatedAt}; New note, list, select, search, delete
 - [x] CodeMirror 6 editor (Markdown + GFM), autosave with "Saved" chip
-- [ ] Read mode via unified pipeline (sanitized)
+- [x] Read mode via unified pipeline (sanitized)
 - [ ] Open .md file (file picker + drag & drop), Download .md, Copy
 - [ ] Status bar stats (words, read time, headings)
 
@@ -38,8 +38,8 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M1 — Read mode via unified pipeline (sanitized). Replace `Preview` in `src/features/shell/EditorPane.tsx`
-(used by Read and the right side of Split); it receives the live `markdown` (unsaved edits included).
+M1 — Open .md file (file picker + drag & drop), Download .md, Copy. Buttons exist (Toolbar "Open file",
+StatusBar "Download" / "Copy") but are not wired.
 
 ## Notes
 - Notes live in IndexedDB `hash-mark` (Dexie, `src/features/notes/db.ts`). The title is derived from the first
@@ -58,6 +58,11 @@ M1 — Read mode via unified pipeline (sanitized). Replace `Preview` in `src/fea
   pasting a URL over selected text makes a link. M2/M4 items should build on these, not duplicate them.
 - Autosave: `Autosaver` (500 ms debounce, ordered, flush on note switch / page hide). Chip: Saved / Saving… /
   Not saved. Edits made in another tab are not picked up by an open editor yet.
+- Read: `src/features/read/` — `renderMarkdown()` (remark-parse → remark-gfm → remark-rehype → rehype-sanitize
+  with GitHub's schema → small polish step → stringify). Raw HTML in Markdown is dropped (supporting `<details>`,
+  `<kbd>` etc. would need rehype-raw, not in the allowed list). External links open in a new tab; footnote
+  links scroll in place and never change the URL fragment (reserved for share links). Remote images load
+  lazily with no referrer. ReadView is lazy-loaded and also used for the right side of Split.
 - Not wired yet: Open file, Share link, Shortcuts, Download, Copy.
 - Repo: https://github.com/tonygale-programming/hash-mark (public). Buy Me a Coffee URL in `src/config.ts` is a placeholder (TODO).
 - Mobile layout (top bar, keyboard toolbar) is not built yet; under 1000px the desktop shell wraps and
