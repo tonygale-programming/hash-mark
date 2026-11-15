@@ -1,5 +1,5 @@
-// TODO: replace with the real project and support URLs.
+// TODO: replace buyMeACoffee with the real support URL.
 export const LINKS = {
-  github: 'https://github.com/',
+  github: 'https://github.com/tonygale-programming/hash-mark',
   buyMeACoffee: 'https://www.buymeacoffee.com/',
 } as const;

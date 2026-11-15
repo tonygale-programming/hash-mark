@@ -49,7 +49,7 @@ M1 — CodeMirror 6 editor (Markdown + GFM), autosave with "Saved" chip. Use `up
 - Search matches title and content. The selected note is remembered per device in localStorage.
 - Status bar stats are hidden until the "Status bar stats" item; the Saved chip is static until autosave.
 - Not wired yet: Open file, Share link, Shortcuts, Download, Copy.
-- Header links in `src/config.ts` point to placeholder GitHub / Buy Me a Coffee URLs (TODO).
+- Repo: https://github.com/tonygale-programming/hash-mark (public). Buy Me a Coffee URL in `src/config.ts` is a placeholder (TODO).
 - Mobile layout (top bar, keyboard toolbar) is not built yet; under 1000px the desktop shell wraps and
   the sidebar becomes a drawer.
 - Known: dev-only `npm audit` advisory in typescript-eslint's minimatch (moderate); not shipped.
