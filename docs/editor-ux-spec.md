@@ -67,11 +67,13 @@ Empty-state placeholder "Type / for blocks, or just start writing"; command pale
 Keyboard toolbar (see layout). Position via visualViewport on web, @capacitor/keyboard in native. Modes: Write, Read.
 
 ## 11. Command registry
-type Command = {
-  id: string; label: string; icon: IconName; keywords: string[];
-  shortcut?: string; syntaxHint?: string;
-  run: (view: EditorView) => boolean;
-};
+Implemented in `src/commands/` (types in `types.ts`):
+- `EditorCommand` = { id, label, icon (Lucide), keywords, shortcut?, syntaxHint?, group: Text | Blocks | Lists,
+  run(view) → boolean (false = does not apply, the key keeps its default), isActive?(state) for toolbars }.
+- `AppCommand` = same metadata, group App, run(context) for app state (Show syntax, cycle mode).
+- Shortcuts are written "Mod+Shift+8"; the editor keymap and the app-level key handler are generated from them.
+- Inline toggles use the Markdown syntax tree, so applying a format inside it removes it.
+- Line commands rewrite only the Markdown prefix of each line (quote, heading, list marker, task box).
 
 ## 12. Share link
 v1: lz-string compress Markdown → URL fragment (#), opens in Read mode; nothing sent to a server.

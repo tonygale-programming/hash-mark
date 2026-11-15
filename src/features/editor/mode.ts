@@ -11,6 +11,13 @@ export function effectiveMode(mode: Mode, narrow: boolean): Mode {
   return narrow && mode === 'split' ? 'write' : mode;
 }
 
+/** Mod+Shift+M: Write → Split → Read → Write (Split skipped on narrow screens). */
+export function nextMode(mode: Mode, narrow: boolean): Mode {
+  const modes = availableModes(narrow).map((option) => option.value);
+  const index = modes.indexOf(effectiveMode(mode, narrow));
+  return modes[(index + 1) % modes.length]!;
+}
+
 export function availableModes(narrow: boolean) {
   return narrow ? MODE_OPTIONS.filter((option) => option.value !== 'split') : MODE_OPTIONS;
 }

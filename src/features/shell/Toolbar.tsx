@@ -1,6 +1,7 @@
 import type { Ref } from 'react';
 import { FolderOpen, Link, PanelLeft, Plus } from 'lucide-react';
 import { Button, SegmentedControl, Toggle, Tooltip } from '../../ui';
+import { appCommand } from '../../commands/appCommands';
 import { availableModes, type Mode } from '../editor/mode';
 
 export type ToolbarProps = {
@@ -48,7 +49,7 @@ export function Toolbar({
         <Button icon={FolderOpen} onClick={onOpenFile}>
           Open file
         </Button>
-        <Tooltip label="Cycle mode" shortcut="Mod+Shift+M">
+        <Tooltip label="Cycle mode" shortcut={appCommand('app.cycleMode').shortcut}>
           <SegmentedControl
             label="Mode"
             options={availableModes(narrow)}
@@ -56,7 +57,7 @@ export function Toolbar({
             onChange={onModeChange}
           />
         </Tooltip>
-        <Tooltip label="Show all Markdown markers" shortcut="Mod+/">
+        <Tooltip label="Show all Markdown markers" shortcut={appCommand('app.showSyntax').shortcut}>
           <Toggle glyph="#" pressed={showSyntax} onPressedChange={onShowSyntaxChange}>
             Show syntax
           </Toggle>

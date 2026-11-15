@@ -81,14 +81,16 @@ describe('MarkdownEditor', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
-  it('frees reserved shortcuts from the default keymap', async () => {
+  it('binds registry shortcuts instead of the clashing defaults', async () => {
     const { keymap } = await import('@codemirror/view');
     const { container } = render(<MarkdownEditor noteId="a" initialDoc="" onChange={() => {}} />);
     const bindings = viewOf(container).state.facet(keymap).flat();
     const keys = bindings.map((binding) => binding.key);
     expect(keys).not.toContain('Mod-/');
-    expect(keys).not.toContain('Mod-i');
-    expect(keys).not.toContain('Mod-Enter');
+    expect(keys).not.toContain('Alt-A');
+    // Mod-i and Mod-Enter belong to the registry (Italic, Toggle task), once each.
+    expect(keys.filter((k) => k === 'Mod-i')).toHaveLength(1);
+    expect(keys.filter((k) => k === 'Mod-Enter')).toHaveLength(1);
     expect(keys).toContain('Mod-z');
   });
 });

@@ -263,6 +263,46 @@ describe('Status bar stats', () => {
   });
 });
 
+describe('Shortcuts', () => {
+  it('cycles modes with Mod+Shift+M from anywhere', async () => {
+    await renderWithNotes();
+    const main = screen.getByRole('main');
+    fireEvent.keyDown(window, { key: 'M', code: 'KeyM', ctrlKey: true, shiftKey: true });
+    expect(main).toHaveAttribute('data-mode', 'split');
+    fireEvent.keyDown(window, { key: 'M', code: 'KeyM', ctrlKey: true, shiftKey: true });
+    expect(main).toHaveAttribute('data-mode', 'read');
+    fireEvent.keyDown(window, { key: 'M', code: 'KeyM', ctrlKey: true, shiftKey: true });
+    expect(main).toHaveAttribute('data-mode', 'write');
+  });
+
+  it('toggles Show syntax with Mod+/', async () => {
+    await renderWithNotes();
+    const toggle = screen.getByRole('button', { name: 'Show syntax' });
+    fireEvent.keyDown(window, { key: '/', code: 'Slash', ctrlKey: true });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(window, { key: '/', code: 'Slash', ctrlKey: true });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('leaves app shortcuts alone while a dialog is open', async () => {
+    await renderWithNotes();
+    await userEvent.click(
+      within(sidebar()).getByRole('button', { name: 'Delete note “Welcome to Hash Mark”' }),
+    );
+    fireEvent.keyDown(window, { key: 'M', code: 'KeyM', ctrlKey: true, shiftKey: true });
+    expect(screen.getByRole('main')).toHaveAttribute('data-mode', 'write');
+  });
+
+  it('formats text in the editor with Mod+B', async () => {
+    await renderWithNotes();
+    replaceDoc('make this bold');
+    const view = editorView();
+    act(() => view.dispatch({ selection: { anchor: 10, head: 14 } }));
+    fireEvent.keyDown(view.contentDOM, { key: 'b', code: 'KeyB', keyCode: 66, ctrlKey: true });
+    expect(view.state.doc.toString()).toBe('make this **bold**');
+  });
+});
+
 describe('Files', () => {
   function titles() {
     return within(sidebar())

@@ -1,9 +1,12 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { readString, writeString } from '../../lib/storage';
 import { NARROW_QUERY, useMediaQuery } from '../../lib/useMediaQuery';
 import { ConfirmDialog, Toast, useToast } from '../../ui';
 import { forgetEditorState } from '../editor/editorStateCache';
-import { effectiveMode, type Mode } from '../editor/mode';
+import { APP_COMMANDS } from '../../commands/appCommands';
+import { appCommandFor } from '../../commands/keymap';
+import type { AppCommandContext } from '../../commands/types';
+import { effectiveMode, nextMode, type Mode } from '../editor/mode';
 import {
   ACCEPT,
   downloadMarkdown,
@@ -75,6 +78,27 @@ export function AppShell() {
       : null;
     (item ?? searchRef.current)?.focus();
   }, [notes]);
+
+  // App-level shortcuts from the registry (Mod+/ Show syntax, Mod+Shift+M cycle mode), anywhere on
+  // the page. The editor handles its own; a dialog keeps its keys.
+  const onAppShortcut = useEffectEvent((event: KeyboardEvent) => {
+    if (event.defaultPrevented || event.isComposing || document.querySelector('dialog[open]')) {
+      return;
+    }
+    const command = appCommandFor(event, APP_COMMANDS);
+    if (!command) return;
+    event.preventDefault();
+    const context: AppCommandContext = {
+      cycleMode: () => setMode((current) => nextMode(current, narrow)),
+      toggleShowSyntax: () => setShowSyntax((on) => !on),
+    };
+    command.run(context);
+  });
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => onAppShortcut(event);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // Drawer: focus search on open, close on Esc and return focus to the Notes button.
   useEffect(() => {

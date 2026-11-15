@@ -16,7 +16,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [x] Status bar stats (words, read time, headings)
 
 ## M2 — Writing help
-- [ ] Command registry + keymap
+- [x] Command registry + keymap
 - [ ] List/quote/task continuation, auto-close pairs
 - [ ] Slash menu
 - [ ] Selection toolbar
@@ -38,10 +38,19 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M2 — Command registry + keymap (`src/commands/`, spec §5 and §11). Shortcuts to wire: Mod-B/I/Shift-X, Mod-K,
-Mod-Alt-1..3, Mod-Shift-8/7/9, Mod-E/Shift-E, Mod-Enter (toggle task). Mod-/ and Mod-Shift-M are app-level.
+M2 — List/quote/task continuation, auto-close pairs. lang-markdown's Enter already continues lists; check
+its edge cases: Enter on an empty nested item outdents and leaves a whitespace-only line ("     ").
+Input rules from the spec: "[] " → task, "---" → divider, "```" → code block; auto-close **, `, (, [, $.
 
 ## Notes
+- Commands: `src/commands/` is the one registry (spec §11). EDITOR_COMMANDS (bold, italic, strikethrough,
+  inline code, link, H1–3, quote, code block, bulleted / numbered / to-do list, toggle task, indent / outdent)
+  and APP_COMMANDS (Show syntax Mod+/, cycle mode Mod+Shift+M). The editor keymap is generated from it
+  (`editorKeyBindings`); app shortcuts match by physical key (`event.code`), so they work on any layout.
+  The app shell imports only `appCommands.ts` / `keymap.ts`; `editorCommands.ts` stays in the lazy editor chunk.
+  Tab / Shift+Tab act only in lists, so Tab still moves focus elsewhere. Mod+K fills the URL from the
+  clipboard only when clipboard-read is already granted (never prompts). Highlight (spec §4) is not a
+  command: `==text==` is not GFM and Read mode would not render it.
 - Design system: identical to Curly Brace (Brace), only the accent differs (Hash Mark #00BFFF, Curly Brace #FFBF00).
   Tokens use `light-dark()`; no `data-theme` follows the system, a saved choice sets it. IBM Plex via @fontsource,
   Lucide 16px icons, 1.5px accent focus ring, New note is the filled main action. See docs/design-tokens.md.
