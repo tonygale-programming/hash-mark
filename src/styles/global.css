@@ -4,6 +4,12 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Keep content clear of the notch and home bar on phones */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 html,
 body,
 #root {
@@ -19,6 +25,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 button,
 input {
   font: inherit;
@@ -29,11 +39,10 @@ input {
   background: var(--accent-soft);
 }
 
-/* Focus ring: 2px focus color, 2px offset, accent in the gap. */
+/* Keyboard focus: a 1.5px accent ring, 1.5px away from the control */
 :focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--accent);
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-width);
 }
 
 .visually-hidden {
@@ -46,4 +55,11 @@ input {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

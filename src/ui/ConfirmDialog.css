@@ -1,5 +1,5 @@
 .dialog {
-  width: min(400px, calc(100vw - 2 * var(--space-16)));
+  width: min(420px, calc(100vw - 2 * var(--space-16)));
   padding: 0;
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-pane);
@@ -20,9 +20,7 @@
 
 .dialog__title {
   margin: 0;
-  font: var(--type-title);
-  font-size: 16px;
-  line-height: 24px;
+  font: 600 16px/24px var(--font-ui);
   overflow-wrap: anywhere;
 }
 

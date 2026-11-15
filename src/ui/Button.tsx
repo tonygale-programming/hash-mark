@@ -3,13 +3,16 @@ import type { LucideIcon } from 'lucide-react';
 import { Icon } from './Icon';
 import './Button.css';
 
-/** `danger` is only for confirming a destructive action. */
-export type ButtonVariant = 'outline' | 'ghost' | 'danger';
+/**
+ * `main`: the one main action on a screen (New note), filled with the accent, as Format in Curly Brace.
+ * `danger`: only for confirming a destructive action.
+ */
+export type ButtonVariant = 'outline' | 'ghost' | 'main' | 'danger';
 
 type CommonProps = {
   variant?: ButtonVariant;
   icon?: LucideIcon;
-  /** Hide the text label below 600px; it stays available to screen readers. */
+  /** Hide the text label below 860px (as Curly Brace's header links); it stays available to screen readers. */
   collapseLabel?: boolean;
   children?: ReactNode;
 };

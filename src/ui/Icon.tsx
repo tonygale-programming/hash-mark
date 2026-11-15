@@ -1,12 +1,15 @@
 import type { LucideIcon } from 'lucide-react';
 
-/** Lucide icon at the design-system size (20px, currentColor). Decorative: label the control instead. */
+/**
+ * Lucide icon in the Brace style: 16px, currentColor, lines 1.5px on screen (stroke 2.25 on the 24px grid).
+ * Decorative: label the control instead.
+ */
 export function Icon({ icon: IconComponent }: { icon: LucideIcon }) {
   return (
     <IconComponent
       className="icon"
-      size={20}
-      strokeWidth={1.75}
+      size={16}
+      strokeWidth={2.25}
       aria-hidden="true"
       focusable="false"
     />

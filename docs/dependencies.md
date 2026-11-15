@@ -6,8 +6,8 @@ Ask before adding anything not listed here.
 react, react-dom, typescript, vite, @vitejs/plugin-react, eslint (+ typescript-eslint, react-hooks), prettier,
 vitest, @testing-library/react, @playwright/test, codemirror, @codemirror/* (state, view, commands, language,
 lang-markdown, autocomplete, search), @lezer/markdown, unified, remark-parse, remark-gfm, remark-rehype,
-rehype-sanitize, rehype-stringify, dexie, dexie-react-hooks, @fontsource-variable/roboto,
-@fontsource-variable/roboto-mono, lz-string, turndown, turndown-plugin-gfm, papaparse, vite-plugin-pwa, shiki,
+rehype-sanitize, rehype-stringify, dexie, dexie-react-hooks, @fontsource/ibm-plex-sans,
+@fontsource/ibm-plex-mono (replaced the Roboto packages to match Curly Brace), lz-string, turndown, turndown-plugin-gfm, papaparse, vite-plugin-pwa, shiki,
 katex, mermaid.
 
 Approved additions: lucide-react (icons); dev-only @types/react, @types/react-dom, @testing-library/dom,

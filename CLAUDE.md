@@ -1,7 +1,7 @@
 # Hash Mark — project memory
 
 Markdown app: open, read, write, share Markdown. Web first (PWA), mobile later via Capacitor.
-Sibling app: Curly Brace (JSON formatter) — same design system and layout patterns.
+Sibling app: Curly Brace (JSON formatter) — one shared design system (Brace); only the accent colour differs.
 
 ## Commands
 - `npm run dev` — dev server
@@ -14,7 +14,7 @@ Sibling app: Curly Brace (JSON formatter) — same design system and layout patt
 React 19 + TypeScript (strict) + Vite. CodeMirror 6 (`@codemirror/lang-markdown`, Lezer GFM).
 Rendering: unified (remark-parse, remark-gfm, remark-rehype, rehype-sanitize, rehype-stringify).
 Storage: IndexedDB via Dexie. Styling: plain CSS + CSS variables from `src/styles/tokens.css` (no Tailwind).
-Fonts self-hosted: @fontsource-variable/roboto, @fontsource-variable/roboto-mono (no external requests).
+Fonts self-hosted: @fontsource/ibm-plex-sans, @fontsource/ibm-plex-mono (no external requests). Icons: lucide-react.
 
 ## Key decisions (don't change without asking)
 - Modes: **Write** (default, live preview) · **Split** (desktop only) · **Read**. No separate Source mode —
@@ -23,8 +23,9 @@ Fonts self-hosted: @fontsource-variable/roboto, @fontsource-variable/roboto-mono
   mobile toolbar, command palette and cheat sheet. Never hard-code an action in one surface only.
 - One document state (Markdown string) shared by all modes; switching never loses content or cursor.
 - Local-first: nothing leaves the browser. Share link v1 = compressed content in URL fragment (`#`), no server.
-- Design: Curly Brace tokens (see docs/design-tokens.md). Yellow accent means ON (selected/toggled), never a CTA.
-  1.5px outlines, no shadows, no gradients, pill controls 32px (40px touch), Roboto / Roboto Mono.
+- Design: identical to Curly Brace (docs/design-tokens.md) except the accent: Hash Mark #00BFFF, Curly Brace #FFBF00.
+  Accent = on/selected and the one main action (New note). 1.5px outlines, 1.5px accent focus ring, no shadows,
+  no gradients, pill controls 32px (40px touch), IBM Plex Sans / Mono, Lucide icons 16px.
 
 ## Conventions
 - Small components, feature folders: `src/features/<feature>/`.

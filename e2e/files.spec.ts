@@ -46,7 +46,7 @@ test.describe('M1 files', () => {
       return dt;
     });
     await editor.dispatchEvent('dragenter', { dataTransfer });
-    await expect(page.getByText('Drop Markdown files to open them')).toBeVisible();
+    await expect(page.getByRole('main')).toHaveClass(/is-dragging/);
     await editor.dispatchEvent('drop', { dataTransfer });
 
     const sidebar = page.getByRole('complementary', { name: 'Notes' });

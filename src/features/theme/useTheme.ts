@@ -13,33 +13,35 @@ function safeLocalStorage(): Storage | undefined {
   }
 }
 
+/**
+ * As in Curly Brace: with no saved choice there is no data-theme and the CSS follows the system
+ * (color-scheme + light-dark()); pressing the theme button saves a choice and sets data-theme.
+ * `theme` is the theme in effect, for the button's icon and label.
+ */
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() =>
-    resolveTheme(readStoredTheme(safeLocalStorage()), systemPrefersDark()),
-  );
+  const [saved, setSaved] = useState<Theme | null>(() => readStoredTheme(safeLocalStorage()));
+  const [systemDark, setSystemDark] = useState(systemPrefersDark);
+  const theme = resolveTheme(saved, systemDark);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    const root = document.documentElement;
+    if (saved) root.dataset.theme = saved;
+    else delete root.dataset.theme;
+  }, [saved]);
 
-  // Follow system changes until the person picks a theme explicitly.
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return;
     const query = window.matchMedia(DARK_QUERY);
-    const onChange = (event: MediaQueryListEvent) => {
-      if (readStoredTheme(safeLocalStorage()) === null) setTheme(event.matches ? 'dark' : 'light');
-    };
+    const onChange = (event: MediaQueryListEvent) => setSystemDark(event.matches);
     query.addEventListener('change', onChange);
     return () => query.removeEventListener('change', onChange);
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const next: Theme = current === 'dark' ? 'light' : 'dark';
-      writeStoredTheme(safeLocalStorage(), next);
-      return next;
-    });
-  }, []);
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+    writeStoredTheme(safeLocalStorage(), next);
+    setSaved(next);
+  }, [theme]);
 
   return { theme, toggleTheme };
 }

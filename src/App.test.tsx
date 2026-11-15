@@ -55,7 +55,9 @@ describe('App shell', () => {
   it('follows the system theme and saves an explicit choice', async () => {
     setMediaMatches(['(prefers-color-scheme: dark)']);
     await renderWithNotes();
-    expect(document.documentElement.dataset.theme).toBe('dark');
+    // No saved choice: no data-theme, the CSS follows the system; the button reflects it.
+    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Switch to light theme' }));
     expect(document.documentElement.dataset.theme).toBe('light');
@@ -304,7 +306,7 @@ describe('Files', () => {
       ],
     };
     fireEvent.dragEnter(window, { dataTransfer });
-    expect(screen.getByText('Drop Markdown files to open them')).toBeInTheDocument();
+    expect(screen.getByRole('main')).toHaveClass('is-dragging');
     fireEvent.drop(window, { dataTransfer });
 
     expect(
@@ -312,7 +314,7 @@ describe('Files', () => {
         'Opened “Dropped”. Couldn’t open “photo.png”: not a Markdown or text file.',
       ),
     ).toBeInTheDocument();
-    expect(screen.queryByText('Drop Markdown files to open them')).not.toBeInTheDocument();
+    expect(screen.getByRole('main')).not.toHaveClass('is-dragging');
     expect(titles()).toEqual(['Dropped', 'Welcome to Hash Mark']);
   });
 

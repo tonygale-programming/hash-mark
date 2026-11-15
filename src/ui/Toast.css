@@ -1,7 +1,8 @@
+/* Toast, as in Curly Brace: an ink pill at the bottom centre, never in the way of a click */
 .toast-region {
   position: fixed;
   right: var(--space-16);
-  bottom: calc(var(--space-16) + var(--control-height) + var(--space-16));
+  bottom: calc(var(--space-20) + env(safe-area-inset-bottom, 0px));
   left: var(--space-16);
   z-index: 50;
   display: flex;
@@ -10,13 +11,16 @@
 }
 
 .toast {
+  display: inline-flex;
+  align-items: center;
   max-width: min(560px, 100%);
+  min-height: 40px;
   padding: var(--space-8) var(--space-16);
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-pill);
   background: var(--primary);
   color: var(--primary-text);
   font: var(--type-label);
-  animation: toast-in var(--motion);
+  animation: toast-in 0.15s ease-out;
 }
 
 .toast--danger {
@@ -27,5 +31,6 @@
 @keyframes toast-in {
   from {
     opacity: 0;
+    transform: translateY(var(--space-8));
   }
 }

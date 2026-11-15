@@ -1,11 +1,13 @@
 .toggle__glyph {
-  font: var(--type-label);
-  font-family: var(--font-mono);
-  font-weight: 600;
+  display: inline-flex;
+  justify-content: center;
+  width: var(--icon-size);
+  font: 600 13px/16px var(--font-code);
 }
 
+/* A toggle that is on: the accent means on */
 .toggle[aria-pressed='true'],
-.toggle[aria-pressed='true']:hover:not(:disabled) {
+.toggle[aria-pressed='true']:hover {
   background: var(--accent);
   color: var(--accent-text);
 }

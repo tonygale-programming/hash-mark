@@ -42,6 +42,10 @@ M2 — Command registry + keymap (`src/commands/`, spec §5 and §11). Shortcuts
 Mod-Alt-1..3, Mod-Shift-8/7/9, Mod-E/Shift-E, Mod-Enter (toggle task). Mod-/ and Mod-Shift-M are app-level.
 
 ## Notes
+- Design system: identical to Curly Brace (Brace), only the accent differs (Hash Mark #00BFFF, Curly Brace #FFBF00).
+  Tokens use `light-dark()`; no `data-theme` follows the system, a saved choice sets it. IBM Plex via @fontsource,
+  Lucide 16px icons, 1.5px accent focus ring, New note is the filled main action. See docs/design-tokens.md.
+  Open: the light-mode focus ring is under 3:1 in both apps (decide a fix together with Curly Brace).
 - Notes live in IndexedDB `hash-mark` (Dexie, `src/features/notes/db.ts`). The title is derived from the first
   line with text (`title.ts`) and stored for listing. The welcome note (`welcome.md`) is seeded once, on
   database creation.

@@ -1,19 +1,21 @@
+/* Status chip, as in Curly Brace: the dot takes the chip's text colour */
 .chip {
   display: inline-flex;
   flex: none;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-8);
   height: var(--chip-height);
-  padding: 0 var(--space-8);
+  padding: 0 var(--space-12) 0 var(--space-8);
+  border: var(--border-width) solid var(--border-subtle);
   border-radius: var(--radius-pill);
+  color: var(--text-muted);
   font: var(--type-label);
   white-space: nowrap;
 }
 
-.chip--neutral {
-  background: var(--surface-sunken);
-  color: var(--text);
-  box-shadow: inset 0 0 0 var(--border-width) var(--border-subtle);
+.chip--success,
+.chip--danger {
+  border-color: transparent;
 }
 
 .chip--success {

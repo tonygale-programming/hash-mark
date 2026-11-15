@@ -2,31 +2,61 @@
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: var(--space-16);
+  height: 100vh;
   height: 100dvh;
-  padding: var(--space-16) var(--gutter);
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding-block: var(--space-16);
+  padding-left: max(var(--gutter), env(safe-area-inset-left, 0px));
+  padding-right: max(var(--gutter), env(safe-area-inset-right, 0px));
 }
 
-/* Header */
+/* Header, as in Curly Brace */
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-8);
+  gap: var(--space-8) var(--space-16);
   min-width: 0;
 }
 
-.wordmark {
+.brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-12);
+  min-width: 0;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--text);
-  font: var(--type-wordmark);
+  font: var(--type-brand);
+  letter-spacing: -0.02em;
   text-decoration: none;
   white-space: nowrap;
   border-radius: var(--radius-small);
 }
 
+.brand-symbol {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.brand-tagline {
+  margin: 0;
+  color: var(--text-muted);
+  font: var(--type-tagline);
+}
+
 .header__links {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-8);
 }
 
 /* Toolbar */
@@ -255,9 +285,14 @@
 }
 
 /* Status bar */
+.statusbar__group:first-child {
+  column-gap: var(--space-16);
+}
+
 .stat {
   color: var(--text-muted);
   font: var(--type-status);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
@@ -279,6 +314,12 @@
   inset: 0;
   z-index: 29;
   background: var(--scrim);
+}
+
+@media (max-width: 860px) {
+  .app {
+    gap: var(--space-12);
+  }
 }
 
 @media (max-width: 999.98px) {
@@ -306,25 +347,14 @@
   }
 }
 
-/* File drop target */
-.drop-overlay {
-  position: fixed;
-  inset: var(--space-8);
-  z-index: 60;
-  display: grid;
-  place-items: center;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius-pane);
-  background: color-mix(in srgb, var(--accent-soft) 88%, transparent);
-  pointer-events: none;
+/* A file is being dragged over the page, as in Curly Brace */
+.editor-pane.is-dragging {
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 var(--space-4) var(--accent);
 }
 
-.drop-overlay__label {
-  margin: 0;
-  padding: var(--space-8) var(--space-16);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--text);
-  font: var(--type-title);
+/* The document you are typing in */
+.editor-pane:focus-within {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-width);
 }

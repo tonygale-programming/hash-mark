@@ -18,12 +18,22 @@ export type EditorPaneProps = {
   markdown: string;
   onChange: (noteId: string, markdown: string) => void;
   autoFocus: boolean;
+  /** Files are being dragged over the window. */
+  dragging?: boolean;
 };
 
-export function EditorPane({ mode, note, markdown, onChange, autoFocus }: EditorPaneProps) {
+export function EditorPane({
+  mode,
+  note,
+  markdown,
+  onChange,
+  autoFocus,
+  dragging = false,
+}: EditorPaneProps) {
+  const className = `pane editor-pane${dragging ? ' is-dragging' : ''}`;
   if (note === undefined) {
     return (
-      <main className="pane editor-pane" aria-label="Document">
+      <main className={className} aria-label="Document">
         <div className="doc">
           <p className="doc__placeholder">Create a note to start writing</p>
         </div>
@@ -43,7 +53,7 @@ export function EditorPane({ mode, note, markdown, onChange, autoFocus }: Editor
   );
 
   return (
-    <main className="pane editor-pane" data-mode={mode} aria-label="Document">
+    <main className={className} data-mode={mode} aria-label="Document">
       {mode === 'write' && editor}
       {mode === 'split' && (
         <div className="split">

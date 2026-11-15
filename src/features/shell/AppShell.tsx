@@ -220,6 +220,7 @@ export function AppShell() {
           markdown={markdown}
           onChange={handleChange}
           autoFocus={note !== undefined && focusNoteId === note.id}
+          dragging={dragging}
         />
       </div>
       <StatusBar
@@ -229,11 +230,7 @@ export function AppShell() {
         onCopy={note ? () => void handleCopy() : undefined}
       />
       <Toast toast={toast} />
-      {dragging && (
-        <div className="drop-overlay" aria-hidden="true">
-          <p className="drop-overlay__label">Drop Markdown files to open them</p>
-        </div>
-      )}
+
       <ConfirmDialog
         open={pendingDelete !== null}
         title={`Delete “${pendingDelete?.title ?? ''}”?`}

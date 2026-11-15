@@ -12,7 +12,7 @@
   }
 }
 
-/* The caret is the focus indicator inside the editor; a ring around the whole document is noise. */
+/* The pane draws the focus ring around the document (as Curly Brace's field); none on the text itself. */
 .editor-host .cm-content:focus-visible {
   outline: none;
   box-shadow: none;

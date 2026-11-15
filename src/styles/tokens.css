@@ -1,82 +1,54 @@
-/* Design tokens — source of truth: docs/design-tokens.md (shared with Curly Brace). */
-
-:root,
-[data-theme='light'] {
-  color-scheme: light;
-
-  --background: #e3e4e8;
-  --surface: #ffffff;
-  --surface-hover: #f0f1f4;
-  --surface-sunken: #f4f5f7;
-  --border: #000000;
-  --border-subtle: #cfd1d7;
-  --text: #000000;
-  --text-muted: #50525a;
-  --text-faint: #6c6f78;
-  --accent: #ffbf00;
-  --accent-text: #000000;
-  --accent-soft: #fff3c9;
-  --primary: #000000;
-  --primary-text: #ffffff;
-  --focus: #000000;
-  --success: #0a5c1f;
-  --success-fill: #99ffb3;
-  --on-success: #0a5c1f;
-  --danger: #b3261e;
-  --danger-fill: #b3261e;
-  --on-danger: #ffffff;
-  --danger-soft: #fdeceb;
-  --scrim: rgb(0 0 0 / 0.32);
-}
-
-[data-theme='dark'] {
-  color-scheme: dark;
-
-  --background: #17181c;
-  --surface: #1f2025;
-  --surface-hover: #2b2d34;
-  --surface-sunken: #17181c;
-  --border: #d5d6db;
-  --border-subtle: #3b3d45;
-  --text: #ffffff;
-  --text-muted: #a6a8b1;
-  --text-faint: #8c8e98;
-  --accent: #ffbf00;
-  --accent-text: #000000;
-  --accent-soft: #40320a;
-  --primary: #ffffff;
-  --primary-text: #17181c;
-  --focus: #ffffff;
-  --success: #99ffb3;
-  --success-fill: #99ffb3;
-  --on-success: #0a5c1f;
-  --danger: #ffb4ab;
-  --danger-fill: #b3261e;
-  --on-danger: #ffffff;
-  --danger-soft: #3b1512;
-  --scrim: rgb(0 0 0 / 0.56);
-}
+/*
+ * Brace design system tokens, identical to Curly Brace (styles.css, "Theme").
+ * The only difference between the sibling apps is the accent family:
+ *   Curly Brace  #ffbf00 (yellow)   Hash Mark  #00bfff (blue)
+ * Hash Mark's values are Curly Brace's with the red and blue channels swapped, so every
+ * contrast pair behaves the same. Source of truth: docs/design-tokens.md.
+ *
+ * Each colour is written once as light-dark(<light>, <dark>); the browser picks one by color-scheme:
+ *   no data-theme      → follows the system setting
+ *   data-theme="light" → always light
+ *   data-theme="dark"  → always dark
+ */
 
 :root {
-  /* Type */
-  --font-ui: 'Roboto Variable', system-ui, sans-serif;
-  --font-mono: 'Roboto Mono Variable', ui-monospace, monospace;
+  color-scheme: light dark;
 
-  --type-label: 500 13px/16px var(--font-ui);
-  --type-status: 400 13px/16px var(--font-ui);
-  --type-body: 400 14px/20px var(--font-ui);
-  --type-title: 600 14px/20px var(--font-ui);
-  --type-hint: 400 12px/16px var(--font-ui);
-  --type-kbd: 500 11px/16px var(--font-mono);
-  --type-wordmark: 700 20px/28px var(--font-ui);
+  /* Surfaces and text */
+  --background: light-dark(#e3e4e8, #17181c);
+  --surface: light-dark(#ffffff, #1f2025);
+  --surface-hover: light-dark(#f0f1f4, #2b2d34);
+  --surface-sunken: light-dark(#f4f5f7, #17181c);
+  --border: light-dark(#000000, #d5d6db);
+  --border-subtle: light-dark(#cfd1d7, #3b3d45);
+  --text: light-dark(#000000, #ffffff);
+  --text-muted: light-dark(#50525a, #a6a8b1);
+  --text-faint: light-dark(#6c6f78, #8c8e98);
 
-  --doc-body: 400 16px/26px var(--font-ui);
-  --doc-h1: 700 32px/40px var(--font-ui);
-  --doc-h2: 600 22px/30px var(--font-ui);
-  --doc-h3: 600 18px/26px var(--font-ui);
-  --doc-code: 400 14px/22px var(--font-mono);
+  /* Accent (Hash Mark blue): the main action (New note) and anything that is on or selected.
+     In dark it is a deep blue with white text, which keeps the text readable. */
+  --accent: light-dark(#00bfff, #004c66);
+  --accent-text: light-dark(#000000, #ffffff);
+  --accent-soft: light-dark(#c9f3ff, #0a3240);
 
-  /* Spacing */
+  /* Ink: tooltips and the toast */
+  --primary: light-dark(#000000, #ffffff);
+  --primary-text: light-dark(#ffffff, #17181c);
+  --focus: #00bfff; /* keyboard focus ring, both themes */
+
+  /* States */
+  --success: light-dark(#0a5c1f, #99ffb3);
+  --success-fill: #99ffb3;
+  --on-success: #0a5c1f;
+  --danger: light-dark(#b3261e, #ffb4ab);
+  --danger-fill: #b3261e;
+  --on-danger: #ffffff;
+  --danger-soft: light-dark(#fdeceb, #3b1512);
+
+  /* Backdrop behind dialogs and the notes drawer */
+  --scrim: rgb(0 0 0 / 0.4);
+
+  /* Spacing scale: the only values used for gaps, paddings and margins */
   --space-2: 2px;
   --space-4: 4px;
   --space-8: 8px;
@@ -86,24 +58,64 @@
   --space-24: 24px;
   --space-32: 32px;
   --space-48: 48px;
-  --gutter: 48px;
 
-  /* Radius */
+  /* Sizes */
+  --control-height: 32px; /* buttons, dropdowns and switches; 40px on touch screens */
+  --chip-height: 24px;
+  --icon-size: 16px;
+  --border-width: 1.5px;
+  --focus-width: 1.5px; /* focus ring thickness, and its gap from the control */
+
+  /* Shapes */
   --radius-pill: 999px;
   --radius-pane: 12px;
   --radius-card: 8px;
   --radius-small: 4px;
 
-  /* Size */
-  --control-height: 32px;
-  --chip-height: 24px;
-  --icon-size: 20px;
-  --border-width: 1.5px;
+  /* Type: IBM Plex, as in Curly Brace */
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-code: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --type-label: 500 13px/16px var(--font-ui);
+  --type-status: 400 13px/16px var(--font-ui);
+  --type-body: 400 14px/20px var(--font-ui);
+  --type-title: 600 14px/20px var(--font-ui);
+  --type-hint: 400 12px/16px var(--font-ui);
+  --type-kbd: 500 11px/16px var(--font-code);
+  --type-brand: 600 22px/32px var(--font-code);
+  --type-tagline: 500 13px/16px var(--font-ui);
+
+  /* Hash Mark only: document typography (editor and Read) and layout */
+  --doc-body: 400 16px/26px var(--font-ui);
+  --doc-h1: 600 32px/40px var(--font-ui);
+  --doc-h2: 600 22px/30px var(--font-ui);
+  --doc-h3: 600 18px/26px var(--font-ui);
+  --doc-code: 400 14px/22px var(--font-code);
   --doc-width: 680px;
   --sidebar-width: 264px;
+  --page-max-width: 1440px;
+  --gutter: var(--space-48);
 
   /* Motion */
   --motion: 120ms ease-out;
+
+  /* Tick drawn on the accent (checked tasks): black on light accent, white on dark */
+  --check-on-accent: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --check-on-accent: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --check-on-accent: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  }
 }
 
 @media (pointer: coarse) {
@@ -112,9 +124,9 @@
   }
 }
 
-@media (max-width: 599.98px) {
+@media (max-width: 860px) {
   :root {
-    --gutter: 16px;
+    --gutter: var(--space-16);
   }
 }
 

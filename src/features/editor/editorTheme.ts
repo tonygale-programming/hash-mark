@@ -31,7 +31,7 @@ export const editorTheme = EditorView.theme({
   '.cm-md-h2': { font: 'var(--doc-h2)', paddingTop: '16px', paddingBottom: '4px' },
   '.cm-md-h3': { font: 'var(--doc-h3)', paddingTop: '12px' },
   '.cm-md-h4': { fontWeight: '600' },
-  '.cm-md-strong': { fontWeight: '700' },
+  '.cm-md-strong': { fontWeight: '600' },
   '.cm-md-em': { fontStyle: 'italic' },
   '.cm-md-strike': { textDecoration: 'line-through' },
   '.cm-md-link': { textDecoration: 'underline', textUnderlineOffset: '3px' },
@@ -44,7 +44,7 @@ export const editorTheme = EditorView.theme({
   },
   '.cm-md-mark': {
     color: 'var(--text-faint)',
-    fontFamily: 'var(--font-mono)',
+    fontFamily: 'var(--font-code)',
     fontWeight: '400',
     fontStyle: 'normal',
     textDecoration: 'none',

@@ -42,7 +42,7 @@ export function Toolbar({
             Notes
           </Button>
         )}
-        <Button icon={Plus} onClick={onNewNote}>
+        <Button variant="main" icon={Plus} onClick={onNewNote}>
           New note
         </Button>
         <Button icon={FolderOpen} onClick={onOpenFile}>
