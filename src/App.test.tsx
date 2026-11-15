@@ -230,7 +230,8 @@ describe('Status bar stats', () => {
 
   it('shows words, reading time and headings for the note', async () => {
     await renderWithNotes();
-    expect(statusBar()).toHaveTextContent('80 words');
+    // Stats come from a deferred copy of the text, so they can trail the first render.
+    await waitFor(() => expect(statusBar()).toHaveTextContent('80 words'));
     expect(statusBar()).toHaveTextContent('1 min read');
     expect(statusBar()).toHaveTextContent('Headings 4');
   });
