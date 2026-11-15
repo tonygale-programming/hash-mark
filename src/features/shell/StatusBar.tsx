@@ -1,15 +1,33 @@
 import { Copy, Download } from 'lucide-react';
 import { Button, Chip } from '../../ui';
+import type { SaveStatus } from '../notes/autosave';
 
 export type DocStats = { words: number; readMinutes: number; headings: number };
 
-export function StatusBar({ stats }: { stats?: DocStats }) {
+const SAVE_CHIP = {
+  saved: { tone: 'success', label: 'Saved' },
+  pending: { tone: 'neutral', label: 'Saving…' },
+  error: { tone: 'danger', label: 'Not saved' },
+} as const;
+
+export function StatusBar({ saveStatus, stats }: { saveStatus?: SaveStatus; stats?: DocStats }) {
+  const chip = saveStatus ? SAVE_CHIP[saveStatus] : null;
   return (
     <footer className="statusbar" aria-label="Document status">
       <div className="statusbar__group" role="status">
-        <Chip tone="success" dot>
-          Saved
-        </Chip>
+        {chip && (
+          <span
+            title={
+              saveStatus === 'error'
+                ? 'Changes could not be saved in this browser. Keep the tab open; saving retries on the next edit.'
+                : undefined
+            }
+          >
+            <Chip tone={chip.tone} dot>
+              {chip.label}
+            </Chip>
+          </span>
+        )}
         {stats && (
           <>
             <span className="stat">

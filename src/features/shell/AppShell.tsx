@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { readString, writeString } from '../../lib/storage';
 import { NARROW_QUERY, useMediaQuery } from '../../lib/useMediaQuery';
 import { ConfirmDialog } from '../../ui';
+import { forgetEditorState } from '../editor/editorStateCache';
 import { effectiveMode, type Mode } from '../editor/mode';
 import { db, type Note } from '../notes/db';
 import { createNote, deleteNote, neighborId } from '../notes/notesStore';
+import { useAutosave } from '../notes/useAutosave';
 import { useNotes } from '../notes/useNotes';
 import { useTheme } from '../theme/useTheme';
 import { EditorPane } from './EditorPane';
@@ -20,6 +22,7 @@ export function AppShell() {
   const { theme, toggleTheme } = useTheme();
   const narrow = useMediaQuery(NARROW_QUERY);
   const notes = useNotes();
+  const { status: saveStatus, saver } = useAutosave();
 
   const [mode, setMode] = useState<Mode>('write');
   const [showSyntax, setShowSyntax] = useState(false);
@@ -27,6 +30,10 @@ export function AppShell() {
   const [query, setQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Note | null>(null);
+  /** Latest editor text, ahead of IndexedDB while a save is pending. */
+  const [draft, setDraft] = useState<{ id: string; markdown: string } | null>(null);
+  /** Note whose editor should take focus (a freshly created note). */
+  const [focusNoteId, setFocusNoteId] = useState<string | null>(null);
 
   const drawerButtonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -36,6 +43,7 @@ export function AppShell() {
   const shownMode = effectiveMode(mode, narrow);
   // A missing or stale selection falls back to the most recently edited note.
   const note = notes?.find((n) => n.id === selectedId) ?? notes?.[0];
+  const markdown = note && draft?.id === note.id ? draft.markdown : (note?.markdown ?? '');
   const drawer = narrow;
   const drawerVisible = drawer && drawerOpen;
 
@@ -73,9 +81,22 @@ export function AppShell() {
     drawerButtonRef.current?.focus();
   }
 
+  function handleChange(id: string, text: string) {
+    setDraft({ id, markdown: text });
+    saver.change(id, text);
+  }
+
+  function selectNote(id: string) {
+    void saver.flush();
+    setSelectedId(id);
+    setFocusNoteId(null);
+  }
+
   async function handleNewNote() {
+    await saver.flush();
     const created = await createNote(db);
     setSelectedId(created.id);
+    setFocusNoteId(created.id);
     setQuery('');
     if (drawer) setDrawerOpen(false);
   }
@@ -86,6 +107,8 @@ export function AppShell() {
     const wasSelected = note?.id === id;
     const focusId = wasSelected ? neighborId(notes, id) : note?.id;
     if (wasSelected) setSelectedId(focusId);
+    saver.cancel(id);
+    forgetEditorState(id);
     afterDelete.current = { deletedId: id, focusId };
     setPendingDelete(null);
     await deleteNote(db, id);
@@ -110,7 +133,7 @@ export function AppShell() {
           notes={notes}
           selectedId={note?.id}
           onSelect={(id) => {
-            setSelectedId(id);
+            selectNote(id);
             if (drawer) closeDrawer();
           }}
           onRequestDelete={setPendingDelete}
@@ -122,9 +145,15 @@ export function AppShell() {
           searchRef={searchRef}
         />
         {drawerVisible && <div className="scrim" aria-hidden="true" onClick={closeDrawer} />}
-        <EditorPane mode={shownMode} note={notes ? note : undefined} />
+        <EditorPane
+          mode={shownMode}
+          note={notes ? note : undefined}
+          markdown={markdown}
+          onChange={handleChange}
+          autoFocus={note !== undefined && focusNoteId === note.id}
+        />
       </div>
-      <StatusBar />
+      <StatusBar saveStatus={note ? saveStatus : undefined} />
       <ConfirmDialog
         open={pendingDelete !== null}
         title={`Delete “${pendingDelete?.title ?? ''}”?`}

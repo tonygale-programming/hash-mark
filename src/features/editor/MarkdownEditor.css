@@ -1,0 +1,19 @@
+.editor-host {
+  --editor-pad-block: var(--space-48);
+  --editor-pad-inline: var(--space-24);
+
+  height: 100%;
+}
+
+@media (max-width: 599.98px) {
+  .editor-host {
+    --editor-pad-block: var(--space-24);
+    --editor-pad-inline: var(--space-16);
+  }
+}
+
+/* The caret is the focus indicator inside the editor; a ring around the whole document is noise. */
+.editor-host .cm-content:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

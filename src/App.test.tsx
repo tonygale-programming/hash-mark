@@ -1,4 +1,5 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { EditorView } from '@codemirror/view';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { db } from './features/notes/db';
@@ -17,9 +18,21 @@ function sidebar() {
   return screen.getByRole('complementary', { name: 'Notes' });
 }
 
+function editorView() {
+  const view = EditorView.findFromDOM(screen.getByRole('textbox', { name: 'Note' }));
+  if (!view) throw new Error('editor not found');
+  return view;
+}
+
+function replaceDoc(text: string) {
+  const view = editorView();
+  act(() => view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } }));
+}
+
 async function renderWithNotes() {
   render(<App />);
   await screen.findByRole('button', { name: /^Welcome to Hash Mark/ });
+  await screen.findByRole('textbox', { name: 'Note' }); // editor is lazy-loaded
 }
 
 describe('App shell', () => {
@@ -136,6 +149,49 @@ describe('Notes', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Delete note' }));
     expect(await within(sidebar()).findByText('No notes yet')).toBeInTheDocument();
     expect(screen.getByRole('main')).toHaveTextContent('Create a note to start writing');
+  });
+});
+
+describe('Editing', () => {
+  it('autosaves edits and updates the title', async () => {
+    await renderWithNotes();
+    replaceDoc('# Shopping list\n\n- milk');
+    expect(screen.getByRole('status')).toHaveTextContent('Saving…');
+
+    expect(
+      await within(sidebar()).findByRole('button', { name: /^Shopping list/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Saved');
+    const stored = await db.notes.toArray();
+    expect(stored.map((note) => note.markdown)).toEqual(['# Shopping list\n\n- milk']);
+  });
+
+  it('focuses the editor for a new note', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'New note' }));
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Note' })).toHaveFocus());
+  });
+
+  it('shows unsaved edits in Read mode straight away', async () => {
+    await renderWithNotes();
+    replaceDoc('Fresh words');
+    await userEvent.click(screen.getByRole('radio', { name: 'Read' }));
+    expect(screen.getByRole('main')).toHaveTextContent('Fresh words');
+  });
+
+  it('keeps edits when switching notes before the save fires', async () => {
+    await createNote(db, '# Other', Date.now() - 60_000);
+    await renderWithNotes();
+    replaceDoc('# Welcome edited');
+    await userEvent.click(within(sidebar()).getByRole('button', { name: /^Other/ }));
+    expect(screen.getByRole('textbox', { name: 'Note' })).toHaveTextContent('# Other');
+
+    await waitFor(async () =>
+      expect((await db.notes.toArray()).map((note) => note.title).sort()).toEqual([
+        'Other',
+        'Welcome edited',
+      ]),
+    );
   });
 });
 

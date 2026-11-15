@@ -208,15 +208,17 @@
   padding: var(--space-48) var(--space-24);
 }
 
+/* The editor owns scrolling and padding, so the caret stays in view. */
+.editor-pane[data-mode='write'],
+.editor-pane[data-mode='split'] {
+  overflow: hidden;
+  padding: 0;
+}
+
 .doc {
   max-width: var(--doc-width);
   margin: 0 auto;
   font: var(--doc-body);
-}
-
-.doc h1 {
-  margin: 0 0 var(--space-16);
-  font: var(--doc-h1);
 }
 
 .doc__placeholder {
@@ -228,21 +230,24 @@
   margin-block: 0;
   font: var(--doc-code);
   white-space: pre-wrap;
-}
-
-.editor-pane[data-mode='split'] {
-  padding: 0;
+  overflow-wrap: anywhere;
 }
 
 .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 100%;
+  height: 100%;
 }
 
 .split__col {
   min-width: 0;
+  overflow-y: auto;
   padding: var(--space-48) var(--space-24);
+}
+
+.split__col--editor {
+  overflow: hidden;
+  padding: 0;
 }
 
 .split__col + .split__col {
@@ -287,5 +292,9 @@
 @media (max-width: 599.98px) {
   .editor-pane {
     padding: var(--space-24) var(--space-16);
+  }
+
+  .editor-pane[data-mode='write'] {
+    padding: 0;
   }
 }
