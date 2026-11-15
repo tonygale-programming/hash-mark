@@ -8,12 +8,12 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [x] App shell matching the layout: header, toolbar, sidebar, editor pane placeholder, status bar; responsive under 1000px
 - [x] Base UI components: Button (outline/ghost), SegmentedControl, Toggle, Chip, KeyCap, Tooltip
 
-## M1 — Notes and editor core
+## M1 — Notes and editor core (done)
 - [x] Dexie store: notes {id, title, markdown, updatedAt}; New note, list, select, search, delete
 - [x] CodeMirror 6 editor (Markdown + GFM), autosave with "Saved" chip
 - [x] Read mode via unified pipeline (sanitized)
 - [x] Open .md file (file picker + drag & drop), Download .md, Copy
-- [ ] Status bar stats (words, read time, headings)
+- [x] Status bar stats (words, read time, headings)
 
 ## M2 — Writing help
 - [ ] Command registry + keymap
@@ -38,8 +38,8 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M1 — Status bar stats (words, read time, headings). `StatusBar` already takes a `stats` prop
-(`DocStats`); compute it from the live `markdown` in `AppShell`. This is the last M1 item.
+M2 — Command registry + keymap (`src/commands/`, spec §5 and §11). Shortcuts to wire: Mod-B/I/Shift-X, Mod-K,
+Mod-Alt-1..3, Mod-Shift-8/7/9, Mod-E/Shift-E, Mod-Enter (toggle task). Mod-/ and Mod-Shift-M are app-level.
 
 ## Notes
 - Notes live in IndexedDB `hash-mark` (Dexie, `src/features/notes/db.ts`). The title is derived from the first
@@ -47,7 +47,11 @@ M1 — Status bar stats (words, read time, headings). `StatusBar` already takes 
   database creation.
 - Delete asks for confirmation (`ConfirmDialog`, native `<dialog>`); there is no trash or undo.
 - Search matches title and content. The selected note is remembered per device in localStorage.
-- Status bar stats are hidden until the "Status bar stats" item.
+- Status bar stats: `documentStats()` in `src/features/notes/stats.ts` — a line scanner (not a full parse) run on
+  the live text via `useDeferredValue`. Words are counted like word processors (whitespace tokens, "well-known"
+  = 1), with `Intl.Segmenter` only for scripts without spaces (CJK, Thai). Link/image URLs and Markdown syntax
+  are not words; code in fences is. Read time = ceil(words / 200). Headings = ATX + setext outside code.
+  Only the save chip is a live region. On phones the headings count is hidden.
 - Editor: `src/features/editor/` — CodeMirror 6 with GFM. Styling is a decoration plugin over the Lezer tree
   (`markdownStyles.ts`, classes `cm-md-*`), markers visible; M3 hides markers in the same plugin.
   Editor states are cached per note id for the session (cursor + undo survive note/mode switches).

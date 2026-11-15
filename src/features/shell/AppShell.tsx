@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { readString, writeString } from '../../lib/storage';
 import { NARROW_QUERY, useMediaQuery } from '../../lib/useMediaQuery';
 import { ConfirmDialog, Toast, useToast } from '../../ui';
@@ -15,6 +15,7 @@ import { useFileDrop } from '../files/useFileDrop';
 import { db, type Note } from '../notes/db';
 import { createNote, deleteNote, neighborId } from '../notes/notesStore';
 import { useAutosave } from '../notes/useAutosave';
+import { documentStats } from '../notes/stats';
 import { deriveTitle } from '../notes/title';
 import { useNotes } from '../notes/useNotes';
 import { useTheme } from '../theme/useTheme';
@@ -55,6 +56,9 @@ export function AppShell() {
   // A missing or stale selection falls back to the most recently edited note.
   const note = notes?.find((n) => n.id === selectedId) ?? notes?.[0];
   const markdown = note && draft?.id === note.id ? draft.markdown : (note?.markdown ?? '');
+  // Deferred so counting never delays typing on long notes.
+  const deferredMarkdown = useDeferredValue(markdown);
+  const stats = useMemo(() => documentStats(deferredMarkdown), [deferredMarkdown]);
   const drawer = narrow;
   const drawerVisible = drawer && drawerOpen;
 
@@ -220,6 +224,7 @@ export function AppShell() {
       </div>
       <StatusBar
         saveStatus={note ? saveStatus : undefined}
+        stats={note ? stats : undefined}
         onDownload={note ? handleDownload : undefined}
         onCopy={note ? () => void handleCopy() : undefined}
       />

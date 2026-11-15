@@ -266,6 +266,13 @@
   font-weight: 500;
 }
 
+/* Phones: keep the status bar to one row of stats. */
+@media (max-width: 599.98px) {
+  .stat--secondary {
+    display: none;
+  }
+}
+
 /* Narrow: sidebar becomes a drawer */
 .scrim {
   position: fixed;

@@ -1,8 +1,9 @@
 import { Copy, Download } from 'lucide-react';
 import { Button, Chip } from '../../ui';
 import type { SaveStatus } from '../notes/autosave';
+import type { DocStats } from '../notes/stats';
 
-export type DocStats = { words: number; readMinutes: number; headings: number };
+const formatNumber = new Intl.NumberFormat('en').format;
 
 const SAVE_CHIP = {
   saved: { tone: 'success', label: 'Saved' },
@@ -22,30 +23,33 @@ export function StatusBar({ saveStatus, stats, onDownload, onCopy }: StatusBarPr
   const chip = saveStatus ? SAVE_CHIP[saveStatus] : null;
   return (
     <footer className="statusbar" aria-label="Document status">
-      <div className="statusbar__group" role="status">
-        {chip && (
-          <span
-            title={
-              saveStatus === 'error'
-                ? 'Changes could not be saved in this browser. Keep the tab open; saving retries on the next edit.'
-                : undefined
-            }
-          >
-            <Chip tone={chip.tone} dot>
-              {chip.label}
-            </Chip>
-          </span>
-        )}
+      <div className="statusbar__group">
+        {/* Only the save state is a live region; stats change on every keystroke. */}
+        <span role="status">
+          {chip && (
+            <span
+              title={
+                saveStatus === 'error'
+                  ? 'Changes could not be saved in this browser. Keep the tab open; saving retries on the next edit.'
+                  : undefined
+              }
+            >
+              <Chip tone={chip.tone} dot>
+                {chip.label}
+              </Chip>
+            </span>
+          )}
+        </span>
         {stats && (
           <>
             <span className="stat">
-              <b>{stats.words}</b> words
+              <b>{formatNumber(stats.words)}</b> {stats.words === 1 ? 'word' : 'words'}
             </span>
             <span className="stat">
-              <b>{stats.readMinutes}</b> min read
+              <b>{formatNumber(stats.readMinutes)}</b> min read
             </span>
-            <span className="stat">
-              Headings <b>{stats.headings}</b>
+            <span className="stat stat--secondary">
+              Headings <b>{formatNumber(stats.headings)}</b>
             </span>
           </>
         )}

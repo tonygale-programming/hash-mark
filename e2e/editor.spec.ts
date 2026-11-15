@@ -20,6 +20,9 @@ test.describe('M1 editor', () => {
     await expect(editor.locator('.cm-md-h1')).toHaveText('# Shopping list');
     await expect(sidebar.locator('.note-list__title').first()).toHaveText('Shopping list');
     await expect(status).toContainText('Saved');
+    const statusBar = page.getByRole('contentinfo', { name: 'Document status' });
+    await expect(statusBar).toContainText('4 words');
+    await expect(statusBar).toContainText('Headings 1');
 
     await page.reload();
     await expect(sidebar.locator('.note-list__title').first()).toHaveText('Shopping list');

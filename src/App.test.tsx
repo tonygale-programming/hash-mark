@@ -223,6 +223,43 @@ describe('Read mode', () => {
   });
 });
 
+describe('Status bar stats', () => {
+  function statusBar() {
+    return screen.getByRole('contentinfo', { name: 'Document status' });
+  }
+
+  it('shows words, reading time and headings for the note', async () => {
+    await renderWithNotes();
+    expect(statusBar()).toHaveTextContent('80 words');
+    expect(statusBar()).toHaveTextContent('1 min read');
+    expect(statusBar()).toHaveTextContent('Headings 4');
+  });
+
+  it('updates live as the note changes, before it is saved', async () => {
+    await renderWithNotes();
+    replaceDoc('# Hello\n\nJust one');
+    await waitFor(() => expect(statusBar()).toHaveTextContent('3 words'));
+    expect(statusBar()).toHaveTextContent('Headings 1');
+
+    replaceDoc('Solo');
+    await waitFor(() => expect(statusBar()).toHaveTextContent('1 word1 min read'));
+  });
+
+  it('keeps the counts out of the live region', async () => {
+    await renderWithNotes();
+    expect(screen.getByRole('status')).toHaveTextContent(/^Saved$/);
+  });
+
+  it('hides stats when there is no note', async () => {
+    await db.notes.clear();
+    render(<App />);
+    expect(
+      await within(screen.getByRole('complementary')).findByText('No notes yet'),
+    ).toBeVisible();
+    expect(statusBar()).not.toHaveTextContent('words');
+  });
+});
+
 describe('Files', () => {
   function titles() {
     return within(sidebar())
