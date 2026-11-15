@@ -8,6 +8,7 @@ Sibling app: Curly Brace (JSON formatter) — same design system and layout patt
 - `npm run build` — type-check + production build
 - `npm run lint` / `npm run format`
 - `npm test` — Vitest unit tests; `npm run test:e2e` — Playwright
+- Deploy: push to `main` → GitHub Actions (lint, test, build) → https://tonygale-programming.github.io/hash-mark/
 
 ## Stack
 React 19 + TypeScript (strict) + Vite. CodeMirror 6 (`@codemirror/lang-markdown`, Lezer GFM).

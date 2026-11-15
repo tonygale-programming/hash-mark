@@ -7,7 +7,7 @@ export function Header({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: 
   const themeLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
   return (
     <header className="header">
-      <a className="wordmark" href="/" aria-label="Hash Mark home">
+      <a className="wordmark" href={import.meta.env.BASE_URL} aria-label="Hash Mark home">
         <span aria-hidden="true">#</span>Hash Mark
       </a>
       <nav className="header__links" aria-label="App">
