@@ -4,6 +4,7 @@ import type { Extension } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
 import { editorTheme } from './editorTheme';
 import { markdownStyles } from './markdownStyles';
+import { smartTyping } from './smartTyping';
 import { EDITOR_COMMANDS } from '../../commands/editorCommands';
 import { editorKeyBindings } from '../../commands/keymap';
 
@@ -14,8 +15,10 @@ export const EDITOR_PLACEHOLDER = 'Type / for blocks, or just start writing';
 
 export function editorExtensions(): Extension[] {
   return [
-    // GFM: tables, strikethrough, task lists, autolinks. Its keymap continues lists on Enter.
-    markdown({ base: markdownLanguage }),
+    // GFM: tables, strikethrough, task lists, autolinks. Its Enter/Backspace keymap is replaced by
+    // smartTyping (same continuation, plus the spec's input rules and auto-close pairs).
+    markdown({ base: markdownLanguage, addKeymap: false }),
+    smartTyping(),
     history(),
     // Registry shortcuts first; a command that does not apply falls through to the defaults.
     keymap.of(editorKeyBindings(EDITOR_COMMANDS)),

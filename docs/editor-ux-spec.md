@@ -45,8 +45,14 @@ portable Markdown. Syntax is learned gradually through hints.
 | Command palette | Mod+Shift+P |
 
 ## 6. Smart typing
-- Enter continues lists/quotes/tasks; Enter on empty item exits (insertNewlineContinueMarkup).
-- Auto-close pairs: **, `, (, [, $. Input rules: "[] " → task, "---" → divider, "```" → code block.
+Implemented in `src/features/editor/smartTyping.ts`.
+- Enter continues lists/quotes/tasks; Enter on an empty item exits the list (or moves a nested item up one
+  level), never making the list loose. Enter on an empty quote line leaves the quote.
+- Auto-close pairs: **, `, (, [ (typing the closer steps over it; Backspace removes an empty pair; only
+  closers the editor inserted are stepped over). Not at a "* " bullet, not inside words, not before text.
+  $ auto-close waits for math rendering (M5); selected text is wrapped by * _ ~ ` $ ( [.
+- Input rules: "[] " / "[ ] " / "[x] " at the line start → task; Enter after an opening ``` fence adds the
+  closing fence; Enter after "---" under a paragraph adds a blank line first so it stays a divider.
 
 ## 7. Smart paste
 | Pasted | Result |

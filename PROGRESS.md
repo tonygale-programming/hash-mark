@@ -17,7 +17,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 
 ## M2 — Writing help
 - [x] Command registry + keymap
-- [ ] List/quote/task continuation, auto-close pairs
+- [x] List/quote/task continuation, auto-close pairs
 - [ ] Slash menu
 - [ ] Selection toolbar
 - [ ] Clickable task checkboxes
@@ -38,11 +38,15 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M2 — List/quote/task continuation, auto-close pairs. lang-markdown's Enter already continues lists; check
-its edge cases: Enter on an empty nested item outdents and leaves a whitespace-only line ("     ").
-Input rules from the spec: "[] " → task, "---" → divider, "```" → code block; auto-close **, `, (, [, $.
+M2 — Slash menu (spec §3): @codemirror/autocomplete custom source fed by EDITOR_COMMANDS (labels, icons,
+keywords, syntax hints); add the insert-only items the spec lists (Table, Divider, Image, Callout; Math and
+Diagram wait for M5) to the registry.
 
 ## Notes
+- Smart typing: `smartTyping.ts` replaces lang-markdown's Enter/Backspace keymap (`addKeymap: false`) with the
+  same continuation (`nonTightLists: false`, so an empty item exits instead of making the list loose) plus
+  the spec's input rules and auto-close pairs. Auto-inserted closers are tracked in a state field, so
+  stepping over never skips characters the person typed. $ only wraps for now (auto-close in M5 with KaTeX).
 - Commands: `src/commands/` is the one registry (spec §11). EDITOR_COMMANDS (bold, italic, strikethrough,
   inline code, link, H1–3, quote, code block, bulleted / numbered / to-do list, toggle task, indent / outdent)
   and APP_COMMANDS (Show syntax Mod+/, cycle mode Mod+Shift+M). The editor keymap is generated from it

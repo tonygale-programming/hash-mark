@@ -1,12 +1,12 @@
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { ensureSyntaxTree } from '@codemirror/language';
-import { EditorSelection, EditorState, type StateCommand } from '@codemirror/state';
+import { EditorSelection, EditorState, type Extension, type StateCommand } from '@codemirror/state';
 
 /**
  * Test helper: a document with "‸" for a cursor or "«…»" for a selection
  * (several allowed), run a command, and get the document back in the same notation.
  */
-export function stateFrom(marked: string): EditorState {
+export function stateFrom(marked: string, extensions: Extension[] = []): EditorState {
   const ranges: { anchor: number; head: number }[] = [];
   let doc = '';
   let open = -1;
@@ -28,6 +28,7 @@ export function stateFrom(marked: string): EditorState {
     extensions: [
       markdown({ base: markdownLanguage }),
       EditorState.allowMultipleSelections.of(true),
+      ...extensions,
     ],
   });
   ensureSyntaxTree(state, state.doc.length, 5000);
