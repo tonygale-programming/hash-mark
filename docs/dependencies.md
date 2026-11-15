@@ -11,7 +11,8 @@ rehype-sanitize, rehype-stringify, dexie, dexie-react-hooks, @fontsource-variabl
 katex, mermaid.
 
 Approved additions: lucide-react (icons); dev-only @types/react, @types/react-dom, @testing-library/dom,
-@testing-library/jest-dom, @testing-library/user-event, jsdom, @eslint/js, globals, eslint-config-prettier.
+@testing-library/jest-dom, @testing-library/user-event, jsdom, @eslint/js, globals, eslint-config-prettier,
+fake-indexeddb (in-memory IndexedDB for Dexie unit tests).
 
 ## How we work
 - Work in small steps; one PROGRESS.md item at a time unless told otherwise.

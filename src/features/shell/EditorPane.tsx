@@ -1,30 +1,39 @@
 import type { Mode } from '../editor/mode';
-import type { NoteSummary } from '../notes/sampleNotes';
+import type { Note } from '../notes/db';
 
-/** Placeholder until the CodeMirror editor (M1). Shows the document column and layout per mode. */
-export function EditorPane({ mode, note }: { mode: Mode; note: NoteSummary | undefined }) {
-  const title = note?.title ?? 'Untitled';
+/**
+ * Placeholder until the CodeMirror editor and Read rendering (rest of M1):
+ * shows the note's Markdown source in the document column.
+ */
+export function EditorPane({ mode, note }: { mode: Mode; note: Note | undefined }) {
   return (
     <main className="pane editor-pane" data-mode={mode} aria-label="Document">
-      {mode === 'split' ? (
+      {note === undefined ? (
+        <div className="doc">
+          <p className="doc__placeholder">Create a note to start writing</p>
+        </div>
+      ) : mode === 'split' ? (
         <div className="split">
           <div className="split__col">
-            <pre className="doc doc--source"># {title}</pre>
+            <Source note={note} />
           </div>
           <div className="split__col">
-            <article className="doc">
-              <h1>{title}</h1>
-            </article>
+            <Source note={note} />
           </div>
         </div>
       ) : (
-        <article className="doc">
-          <h1>{title}</h1>
-          {mode === 'write' && (
-            <p className="doc__placeholder">Type / for blocks, or just start writing</p>
-          )}
-        </article>
+        <Source note={note} />
       )}
     </main>
+  );
+}
+
+function Source({ note }: { note: Note }) {
+  return note.markdown ? (
+    <pre className="doc doc--source">{note.markdown}</pre>
+  ) : (
+    <div className="doc">
+      <p className="doc__placeholder">Type / for blocks, or just start writing</p>
+    </div>
   );
 }

@@ -22,6 +22,16 @@
   background: var(--surface);
 }
 
+.btn--danger {
+  border-color: var(--danger-fill);
+  background: var(--danger-fill);
+  color: var(--on-danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background: var(--danger-fill);
+}
+
 .btn--has-icon {
   padding-inline-start: var(--space-8);
 }

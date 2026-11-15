@@ -9,7 +9,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [x] Base UI components: Button (outline/ghost), SegmentedControl, Toggle, Chip, KeyCap, Tooltip
 
 ## M1 — Notes and editor core
-- [ ] Dexie store: notes {id, title, markdown, updatedAt}; New note, list, select, search, delete
+- [x] Dexie store: notes {id, title, markdown, updatedAt}; New note, list, select, search, delete
 - [ ] CodeMirror 6 editor (Markdown + GFM), autosave with "Saved" chip
 - [ ] Read mode via unified pipeline (sanitized)
 - [ ] Open .md file (file picker + drag & drop), Download .md, Copy
@@ -38,11 +38,17 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M1 — Dexie store: notes {id, title, markdown, updatedAt}; New note, list, select, search, delete.
+M1 — CodeMirror 6 editor (Markdown + GFM), autosave with "Saved" chip. Use `updateNote()` from
+`src/features/notes/notesStore.ts` (re-derives the title). Replace the `<pre>` placeholder in `EditorPane`.
 
 ## Notes
-- M0 shell uses placeholder notes (`src/features/notes/sampleNotes.ts`); New note, Open file, Share link,
-  Shortcuts, Download and Copy are not wired yet.
+- Notes live in IndexedDB `hash-mark` (Dexie, `src/features/notes/db.ts`). The title is derived from the first
+  line with text (`title.ts`) and stored for listing. The welcome note (`welcome.md`) is seeded once, on
+  database creation.
+- Delete asks for confirmation (`ConfirmDialog`, native `<dialog>`); there is no trash or undo.
+- Search matches title and content. The selected note is remembered per device in localStorage.
+- Status bar stats are hidden until the "Status bar stats" item; the Saved chip is static until autosave.
+- Not wired yet: Open file, Share link, Shortcuts, Download, Copy.
 - Header links in `src/config.ts` point to placeholder GitHub / Buy Me a Coffee URLs (TODO).
 - Mobile layout (top bar, keyboard toolbar) is not built yet; under 1000px the desktop shell wraps and
   the sidebar becomes a drawer.

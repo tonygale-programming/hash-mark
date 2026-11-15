@@ -129,22 +129,39 @@
   list-style: none;
 }
 
+.note-list__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-inline-end: var(--space-4);
+  border-radius: var(--radius-card);
+  transition: background-color var(--motion);
+}
+
+.note-list__row:hover {
+  background: var(--surface-hover);
+}
+
+.note-list__row[data-selected],
+.note-list__row[data-selected]:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: inset 0 0 0 var(--border-width) var(--border);
+}
+
 .note-list__item {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--space-2);
-  width: 100%;
+  min-width: 0;
   padding: var(--space-8) var(--space-12);
   border: 0;
   border-radius: var(--radius-card);
   background: transparent;
+  color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background-color var(--motion);
-}
-
-.note-list__item:hover {
-  background: var(--surface-hover);
 }
 
 .note-list__title {
@@ -159,21 +176,30 @@
   font: var(--type-hint);
 }
 
-.note-list__item[aria-current='true'],
-.note-list__item[aria-current='true']:hover {
-  background: var(--accent);
-  color: var(--accent-text);
-  box-shadow: inset 0 0 0 var(--border-width) var(--border);
-}
-
-.note-list__item[aria-current='true'] .note-list__meta {
+.note-list__row[data-selected] .note-list__meta {
   color: var(--accent-text);
 }
 
-.note-list__item[aria-current='true']:focus-visible {
-  box-shadow:
-    inset 0 0 0 var(--border-width) var(--border),
-    0 0 0 2px var(--accent);
+/* Delete: revealed on hover or focus; always shown on touch and on the selected note. */
+.note-list__delete {
+  opacity: 0;
+  color: inherit;
+}
+
+.note-list__row:hover .note-list__delete,
+.note-list__row:focus-within .note-list__delete,
+.note-list__row[data-selected] .note-list__delete {
+  opacity: 1;
+}
+
+.note-list__row[data-selected] .note-list__delete:hover {
+  background: color-mix(in srgb, var(--accent-text) 12%, transparent);
+}
+
+@media (hover: none) {
+  .note-list__delete {
+    opacity: 1;
+  }
 }
 
 /* Editor pane */

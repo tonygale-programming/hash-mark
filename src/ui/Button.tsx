@@ -3,7 +3,8 @@ import type { LucideIcon } from 'lucide-react';
 import { Icon } from './Icon';
 import './Button.css';
 
-export type ButtonVariant = 'outline' | 'ghost';
+/** `danger` is only for confirming a destructive action. */
+export type ButtonVariant = 'outline' | 'ghost' | 'danger';
 
 type CommonProps = {
   variant?: ButtonVariant;
