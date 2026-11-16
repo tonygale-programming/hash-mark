@@ -11,7 +11,7 @@
   margin-bottom: 0;
 }
 
-.prose :is(p, ul, ol, blockquote, pre, .table-wrap, hr, section) {
+.prose :is(p, ul, ol, blockquote, pre, .table-wrap, hr, section, .callout) {
   margin: 0 0 var(--space-16);
 }
 
@@ -102,6 +102,27 @@
 
 .prose blockquote > :last-child {
   margin-bottom: 0;
+}
+
+/* GitHub alerts ("> [!NOTE]"): a sunken card with an accent edge; Warning and Caution use danger. */
+.prose .callout {
+  padding: var(--space-12) var(--space-16);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+
+.prose :is(.callout--warning, .callout--caution) {
+  border-left-color: var(--danger);
+}
+
+.prose .callout > :last-child {
+  margin-bottom: 0;
+}
+
+.prose .callout__title {
+  margin-bottom: var(--space-4);
+  font: var(--type-title);
 }
 
 .prose code {

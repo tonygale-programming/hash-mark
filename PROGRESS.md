@@ -18,7 +18,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 ## M2 — Writing help
 - [x] Command registry + keymap
 - [x] List/quote/task continuation, auto-close pairs
-- [ ] Slash menu
+- [x] Slash menu
 - [ ] Selection toolbar
 - [ ] Clickable task checkboxes
 
@@ -38,11 +38,22 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
-M2 — Slash menu (spec §3): @codemirror/autocomplete custom source fed by EDITOR_COMMANDS (labels, icons,
-keywords, syntax hints); add the insert-only items the spec lists (Table, Divider, Image, Callout; Math and
-Diagram wait for M5) to the registry.
+M2 — Selection toolbar (spec §4): a floating pill over a non-empty selection (CodeMirror showTooltip),
+fed by the Text commands of the registry with `isActive` for the on state; "Turn into ▾" lists the Blocks
+and Lists commands. Highlight stays out (not GFM).
 
 ## Notes
+- Slash menu (spec §3): `src/features/editor/slashMenu.ts`, @codemirror/autocomplete with our own source
+  (`override`, so lang-markdown's HTML tag completion is off). Items are registry commands listed by id
+  (`SLASH_ITEM_IDS`); ranking is `searchCommands` (`src/commands/search.ts`, reusable for the command
+  palette). The result has an `update` hook and `activateOnTypingDelay: 0`, so filtering keeps up with fast
+  typing; CodeMirror ignores Enter/arrows for 75 ms after the menu opens (e2e types with a small delay).
+  Icons are Lucide, rendered once to DOM (`ui/iconElement.ts`). The footer of key hints is added by a
+  small view plugin (autocomplete has no footer). The list is labelled "Blocks" for screen readers.
+  New registry commands: Table, Divider, Image, Callout (`src/commands/insert.ts`, snippet tab stops).
+  Read mode renders GitHub alerts as callouts. In the editor `[!NOTE]` still looks like a link
+  (live preview in M3 can style it). The editorCommands chunk grew to ~101 kB gzip (autocomplete's
+  snippets); the main bundle is unchanged.
 - Shortcuts dialog (as Curly Brace): header Shortcuts button or `?` (ignored while typing) opens "Keyboard
   shortcuts", generated from the registry plus Undo/Redo for reference; two balanced columns from 800px.
   Lazy-loaded with the editor commands. Mod+O (Open file) and Mod+S (Download) added as in Curly Brace;
@@ -100,7 +111,7 @@ Diagram wait for M5) to the registry.
   (BOM stripped, CRLF → LF). The drop handler runs in the capture phase and stops CodeMirror's own file drop.
   Download saves the live text as `<title>.md` (title from the live text); Copy copies the Markdown source.
 - Toast (`src/ui/Toast.tsx`, `useToast`): one message at a time in a polite live region, 4 s (errors 7 s).
-- Not wired yet: Share link, Shortcuts.
+- Not wired yet: Share link.
 - Repo: https://github.com/tonygale-programming/hash-mark (public). Buy Me a Coffee URL in `src/config.ts` is a placeholder (TODO).
 - Mobile layout (top bar, keyboard toolbar) is not built yet; under 1000px the desktop shell wraps and
   the sidebar becomes a drawer.

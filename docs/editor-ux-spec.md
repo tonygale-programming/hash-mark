@@ -25,6 +25,18 @@ portable Markdown. Syntax is learned gradually through hints.
   Selected item = accent fill + outline. Footer shows key hints.
 - Implementation: @codemirror/autocomplete custom source; snippets with tab stops.
 
+Implemented in `src/features/editor/slashMenu.ts` (Math and Diagram arrive with M5):
+- Opens on "/" at the line start, after a space, or after a list/quote marker; never inside code, raw HTML
+  or URLs. Typing filters (`searchCommands` in `src/commands/search.ts`): label start, exact keyword
+  ("h2", "hr", "todo"), a later word ("list"), keyword start, then letters in order. No match closes it.
+- Block items act on the line the slash was typed on ("Weekend /h1" → "# Weekend"); Image and Link insert
+  at the cursor. The "/query" is removed first, so Undo gives back the plain line.
+- Table, Divider and Callout take a blank line or go after the current one, with blank lines added where
+  Markdown needs them. Table and Image have placeholders; Tab moves to the next.
+- Callout writes a GitHub alert (`> [!NOTE]`); Read mode shows alerts (NOTE, TIP, IMPORTANT, WARNING,
+  CAUTION) as titled callouts.
+- Every item is a registry command (Table, Divider, Image and Callout were added for it).
+
 ## 4. Selection toolbar
 - Floating pill above a non-empty selection: Bold, Italic, Strikethrough, Inline code, Link, Highlight | Turn into ▾.
 - Buttons toggle (Bold again removes **). Tooltip shows name + shortcut.

@@ -56,6 +56,30 @@ describe('renderMarkdown', () => {
     expect(img?.getAttribute('referrerpolicy')).toBe('no-referrer');
   });
 
+  describe('callouts (GitHub alerts)', () => {
+    it('turns "> [!NOTE]" into a titled callout', () => {
+      const html = dom('> [!NOTE]\n> Bring a jacket');
+      const callout = html.querySelector('.callout');
+      expect(callout?.className).toBe('callout callout--note');
+      expect(callout?.querySelector('.callout__title')?.textContent).toBe('Note');
+      expect(callout?.textContent).not.toContain('[!NOTE]');
+      expect(callout?.textContent).toContain('Bring a jacket');
+      expect(html.querySelector('blockquote')).toBeNull();
+    });
+
+    it('knows the five GitHub kinds, in any case', () => {
+      const titles = ['TIP', 'important', 'Warning', 'CAUTION'].map(
+        (kind) => dom(`> [!${kind}]\n> Text`).querySelector('.callout__title')?.textContent,
+      );
+      expect(titles).toEqual(['Tip', 'Important', 'Warning', 'Caution']);
+    });
+
+    it('leaves other quotes alone', () => {
+      expect(dom('> [!OTHER]\n> Text').querySelector('.callout')).toBeNull();
+      expect(dom('> Just a quote').querySelector('blockquote')).not.toBeNull();
+    });
+  });
+
   describe('sanitizing', () => {
     it('drops raw HTML, including scripts and event handlers', () => {
       const html = renderMarkdown(

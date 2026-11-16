@@ -9,14 +9,51 @@ import { unified } from 'unified';
 type HastNode = {
   type: string;
   tagName?: string;
+  value?: string;
   properties?: Record<string, unknown>;
   children?: HastNode[];
 };
 
+const ALERTS: Record<string, string> = {
+  NOTE: 'Note',
+  TIP: 'Tip',
+  IMPORTANT: 'Important',
+  WARNING: 'Warning',
+  CAUTION: 'Caution',
+};
+
+/**
+ * GitHub alerts: a quote starting with "[!NOTE]" (TIP, IMPORTANT, WARNING, CAUTION) becomes a
+ * callout with a title. Returns false for an ordinary quote.
+ */
+function toCallout(quote: HastNode): boolean {
+  const paragraph = quote.children?.find((child) => child.type === 'element');
+  const first = paragraph?.tagName === 'p' ? paragraph.children?.[0] : undefined;
+  const marker =
+    first?.type === 'text' ? /^\[!(\w+)\][ \t]*(?:\n|$)/.exec(first.value ?? '') : null;
+  const kind = marker?.[1]?.toUpperCase();
+  if (!paragraph || !first || !marker || !kind || !ALERTS[kind]) return false;
+  first.value = first.value!.slice(marker[0].length);
+  if (!first.value && paragraph.children!.length === 1) {
+    quote.children = quote.children!.filter((child) => child !== paragraph);
+  } else if (!first.value) {
+    paragraph.children!.shift();
+  }
+  quote.tagName = 'div';
+  quote.properties = { className: ['callout', `callout--${kind.toLowerCase()}`] };
+  quote.children!.unshift({
+    type: 'element',
+    tagName: 'p',
+    properties: { className: ['callout__title'] },
+    children: [{ type: 'text', value: ALERTS[kind] }],
+  });
+  return true;
+}
+
 /**
  * Runs after sanitizing, so it only adds safe attributes:
  * external links open in a new tab, images load lazily without a referrer,
- * and tables get a scroll wrapper for narrow screens.
+ * tables get a scroll wrapper for narrow screens, and GitHub alerts become callouts.
  */
 function rehypeReadPolish() {
   return (tree: HastNode) => {
@@ -38,6 +75,7 @@ function rehypeReadPolish() {
           props.loading = 'lazy';
           props.referrerPolicy = 'no-referrer';
         }
+        if (child.tagName === 'blockquote') toCallout(child);
         if (child.tagName === 'table') {
           children[index] = {
             type: 'element',

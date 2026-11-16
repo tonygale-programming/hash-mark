@@ -5,6 +5,8 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Info,
+  Image as ImageIcon,
   IndentDecrease,
   IndentIncrease,
   Italic,
@@ -14,7 +16,9 @@ import {
   ListTodo,
   SquareCheck,
   SquareCode,
+  SeparatorHorizontal,
   Strikethrough,
+  Table,
   TextQuote,
 } from 'lucide-react';
 import {
@@ -28,6 +32,14 @@ import {
   toggleInline,
   toggleLink,
 } from './inline';
+import {
+  CALLOUT_TEMPLATE,
+  DIVIDER_TEMPLATE,
+  IMAGE_TEMPLATE,
+  TABLE_TEMPLATE,
+  insertBlock,
+  insertInline,
+} from './insert';
 import {
   indentList,
   toggleCodeBlock,
@@ -154,6 +166,42 @@ export const EDITOR_COMMANDS: EditorCommand[] = [
     syntaxHint: '```',
     group: 'Blocks',
     run: toggleCodeBlock,
+  },
+  {
+    id: 'block.table',
+    label: 'Table',
+    icon: Table,
+    keywords: ['grid', 'columns', 'rows'],
+    syntaxHint: '| |',
+    group: 'Blocks',
+    run: insertBlock(TABLE_TEMPLATE),
+  },
+  {
+    id: 'block.divider',
+    label: 'Divider',
+    icon: SeparatorHorizontal,
+    keywords: ['horizontal rule', 'hr', 'line', 'separator'],
+    syntaxHint: '---',
+    group: 'Blocks',
+    run: insertBlock(DIVIDER_TEMPLATE),
+  },
+  {
+    id: 'block.image',
+    label: 'Image',
+    icon: ImageIcon,
+    keywords: ['picture', 'photo', 'img'],
+    syntaxHint: '![]()',
+    group: 'Blocks',
+    run: insertInline(IMAGE_TEMPLATE),
+  },
+  {
+    id: 'block.callout',
+    label: 'Callout',
+    icon: Info,
+    keywords: ['note', 'alert', 'admonition', 'tip', 'warning'],
+    syntaxHint: '> [!NOTE]',
+    group: 'Blocks',
+    run: insertBlock(CALLOUT_TEMPLATE),
   },
   {
     id: 'list.bullet',

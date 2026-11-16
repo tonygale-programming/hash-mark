@@ -4,6 +4,7 @@ import type { Extension } from '@codemirror/state';
 import { EditorView, keymap, placeholder } from '@codemirror/view';
 import { editorTheme } from './editorTheme';
 import { markdownStyles } from './markdownStyles';
+import { slashMenu } from './slashMenu';
 import { smartTyping } from './smartTyping';
 import { EDITOR_COMMANDS } from '../../commands/editorCommands';
 import { editorKeyBindings } from '../../commands/keymap';
@@ -19,6 +20,8 @@ export function editorExtensions(): Extension[] {
     // smartTyping (same continuation, plus the spec's input rules and auto-close pairs).
     markdown({ base: markdownLanguage, addKeymap: false }),
     smartTyping(),
+    // Its keys (arrows, Enter, Esc) take precedence while the menu is open.
+    slashMenu(),
     history(),
     // Registry shortcuts first; a command that does not apply falls through to the defaults.
     keymap.of(editorKeyBindings(EDITOR_COMMANDS)),
