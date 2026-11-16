@@ -31,6 +31,8 @@ export type EditorCommand = CommandMeta & {
 export type AppCommandContext = {
   cycleMode: () => void;
   toggleShowSyntax: () => void;
+  loadSample: () => void;
+  clearNote: () => void;
 };
 
 /** Acts on the app (modes, panels), from anywhere on the page. */

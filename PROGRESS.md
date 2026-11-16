@@ -43,6 +43,11 @@ keywords, syntax hints); add the insert-only items the spec lists (Table, Divide
 Diagram wait for M5) to the registry.
 
 ## Notes
+- Sample / Clear (as Curly Brace): app commands `app.sample` / `app.clear`. Sample fills an empty note, or opens
+  as a new note when the current note has text; Clear empties the note (off when already empty). Both go
+  through the editor's history (`replaceDocument` in `editorStateCache.ts`), so Mod+Z undoes them, also after
+  clearing from Read mode. The phone toolbar now wraps to four rows: the planned phone layout (top bar, ⋯ menu)
+  should take these buttons.
 - Smart typing: `smartTyping.ts` replaces lang-markdown's Enter/Backspace keymap (`addKeymap: false`) with the
   same continuation (`nonTightLists: false`, so an empty item exits instead of making the list loose) plus
   the spec's input rules and auto-close pairs. Auto-inserted closers are tracked in a state field, so

@@ -15,6 +15,10 @@ export type ToolbarProps = {
   drawerButtonRef: Ref<HTMLButtonElement>;
   onNewNote: () => void;
   onOpenFile: () => void;
+  onSample: () => void;
+  onClear: () => void;
+  /** Clear is off when the note is already empty (as in Curly Brace). */
+  canClear: boolean;
 };
 
 export function Toolbar({
@@ -28,7 +32,12 @@ export function Toolbar({
   drawerButtonRef,
   onNewNote,
   onOpenFile,
+  onSample,
+  onClear,
+  canClear,
 }: ToolbarProps) {
+  const sample = appCommand('app.sample');
+  const clear = appCommand('app.clear');
   return (
     <div className="toolbar">
       <div className="toolbar__group">
@@ -49,6 +58,9 @@ export function Toolbar({
         <Button icon={FolderOpen} onClick={onOpenFile}>
           Open file
         </Button>
+        <Button icon={sample.icon} onClick={onSample}>
+          {sample.label}
+        </Button>
         <Tooltip label="Cycle mode" shortcut={appCommand('app.cycleMode').shortcut}>
           <SegmentedControl
             label="Mode"
@@ -65,6 +77,9 @@ export function Toolbar({
       </div>
       <div className="toolbar__group">
         <Button icon={Link}>Share link</Button>
+        <Button icon={clear.icon} onClick={onClear} disabled={!canClear}>
+          {clear.label}
+        </Button>
       </div>
     </div>
   );

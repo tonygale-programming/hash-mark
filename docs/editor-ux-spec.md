@@ -87,7 +87,10 @@ Later: optional hosted links (short URL, update/revoke).
 
 ## 13. Screen layout (desktop, from the approved mockup)
 - **Header row:** left — brand `#Hash Mark` (Lucide hash + mono name, as Curly Brace's `{brace}`) and the tagline "Markdown, made readable." Right — ghost links (no border): Shortcuts (keyboard icon), GitHub (code icon), Buy Me a Coffee (cup icon), theme button (moon icon, aria-label).
-- **Toolbar row:** left — `New note` (main action, accent fill), `Open file` (outline pill), segmented control `Write | Split | Read` (selected = accent), toggle `# Show syntax`. Right — `Share link` (outline).
+- **Toolbar row:** left — `New note` (main action, accent fill), `Open file`, `Sample` (outline pills), segmented control `Write | Split | Read` (selected = accent), toggle `# Show syntax`. Right — `Share link`, `Clear` (outline; Clear is off when the note is empty).
+- **Sample / Clear (as Curly Brace):** Sample puts an example document (`src/features/notes/sample.md`) into an
+  empty note, or opens it as a new note when the current one has text. Clear empties the note. Both are one
+  undoable edit (Mod+Z) and confirm with a toast.
 - **Main row:** left — notes sidebar pane (search input pill, list of notes: title + "Edited 2 min ago"; selected note = accent fill + outline). Right — editor pane (surface, 1.5px border, radius 12), document column max-width 680px centered.
 - **Status bar:** left — green chip `● Saved`, then stats with bold figures: `186 words`, `1 min read`, `Headings 3`. Right — `Download`, `Copy` (outline pills).
 - Under 1000px: sidebar collapses (drawer), toolbar wraps, Split hidden.

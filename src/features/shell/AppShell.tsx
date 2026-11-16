@@ -2,8 +2,8 @@ import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState 
 import { readString, writeString } from '../../lib/storage';
 import { NARROW_QUERY, useMediaQuery } from '../../lib/useMediaQuery';
 import { ConfirmDialog, Toast, useToast } from '../../ui';
-import { forgetEditorState } from '../editor/editorStateCache';
-import { APP_COMMANDS } from '../../commands/appCommands';
+import { focusEditor, forgetEditorState, replaceDocument } from '../editor/editorStateCache';
+import { APP_COMMANDS, appCommand } from '../../commands/appCommands';
 import { appCommandFor } from '../../commands/keymap';
 import type { AppCommandContext } from '../../commands/types';
 import { effectiveMode, nextMode, type Mode } from '../editor/mode';
@@ -17,6 +17,7 @@ import {
 import { useFileDrop } from '../files/useFileDrop';
 import { db, type Note } from '../notes/db';
 import { createNote, deleteNote, neighborId } from '../notes/notesStore';
+import sampleMarkdown from '../notes/sample.md?raw';
 import { useAutosave } from '../notes/useAutosave';
 import { documentStats } from '../notes/stats';
 import { deriveTitle } from '../notes/title';
@@ -88,11 +89,7 @@ export function AppShell() {
     const command = appCommandFor(event, APP_COMMANDS);
     if (!command) return;
     event.preventDefault();
-    const context: AppCommandContext = {
-      cycleMode: () => setMode((current) => nextMode(current, narrow)),
-      toggleShowSyntax: () => setShowSyntax((on) => !on),
-    };
-    command.run(context);
+    command.run(appContext());
   });
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => onAppShortcut(event);
@@ -180,6 +177,48 @@ export function AppShell() {
     }
   }
 
+  /** Replaces the note's text as one undoable edit, and saves it. */
+  function replaceNoteText(id: string, text: string) {
+    // The open editor reports its own change; otherwise save it here.
+    if (!replaceDocument(id, text)) handleChange(id, text);
+  }
+
+  /**
+   * Sample (as in Curly Brace): an empty note gets the sample; a note with text keeps it and the
+   * sample opens as a new note, so one click never overwrites writing.
+   */
+  async function loadSample() {
+    if (note && !markdown.trim()) {
+      replaceNoteText(note.id, sampleMarkdown);
+      showToast('Sample loaded');
+      return;
+    }
+    await saver.flush();
+    const created = await createNote(db, sampleMarkdown);
+    setSelectedId(created.id);
+    setFocusNoteId(null);
+    setQuery('');
+    if (drawer) setDrawerOpen(false);
+    showToast('Sample opened as a new note');
+  }
+
+  /** Clear (as in Curly Brace): empties the note; Mod+Z brings the text back. */
+  function clearNote() {
+    if (!note || !markdown.trim()) return;
+    replaceNoteText(note.id, '');
+    showToast('Cleared');
+    focusEditor(note.id);
+  }
+
+  function appContext(): AppCommandContext {
+    return {
+      cycleMode: () => setMode((current) => nextMode(current, narrow)),
+      toggleShowSyntax: () => setShowSyntax((on) => !on),
+      loadSample: () => void loadSample(),
+      clearNote,
+    };
+  }
+
   async function handleConfirmDelete() {
     if (!pendingDelete || !notes) return;
     const { id } = pendingDelete;
@@ -207,6 +246,9 @@ export function AppShell() {
         drawerButtonRef={drawerButtonRef}
         onNewNote={() => void handleNewNote()}
         onOpenFile={() => fileInputRef.current?.click()}
+        onSample={() => appCommand('app.sample').run(appContext())}
+        onClear={() => appCommand('app.clear').run(appContext())}
+        canClear={note !== undefined && markdown.trim() !== ''}
       />
       <input
         ref={fileInputRef}

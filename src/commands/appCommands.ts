@@ -1,4 +1,4 @@
-import { Columns2, Hash } from 'lucide-react';
+import { Columns2, Eraser, FileText, Hash } from 'lucide-react';
 import type { AppCommand } from './types';
 
 export const APP_COMMANDS: AppCommand[] = [
@@ -19,6 +19,23 @@ export const APP_COMMANDS: AppCommand[] = [
     shortcut: 'Mod+Shift+M',
     group: 'App',
     run: (context) => context.cycleMode(),
+  },
+  // Sample and Clear, as in Curly Brace (both undoable with Mod+Z while the page is open).
+  {
+    id: 'app.sample',
+    label: 'Sample',
+    icon: FileText,
+    keywords: ['example', 'demo', 'try'],
+    group: 'App',
+    run: (context) => context.loadSample(),
+  },
+  {
+    id: 'app.clear',
+    label: 'Clear',
+    icon: Eraser,
+    keywords: ['empty', 'erase', 'reset'],
+    group: 'App',
+    run: (context) => context.clearNote(),
   },
 ];
 

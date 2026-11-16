@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { undo } from '@codemirror/commands';
 import { EditorView } from '@codemirror/view';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
@@ -300,6 +301,78 @@ describe('Shortcuts', () => {
     act(() => view.dispatch({ selection: { anchor: 10, head: 14 } }));
     fireEvent.keyDown(view.contentDOM, { key: 'b', code: 'KeyB', keyCode: 66, ctrlKey: true });
     expect(view.state.doc.toString()).toBe('make this **bold**');
+  });
+});
+
+describe('Sample and Clear', () => {
+  function titles() {
+    return within(sidebar())
+      .getAllByRole('listitem')
+      .map((li) => li.querySelector('.note-list__title')?.textContent);
+  }
+
+  it('puts the sample into an empty note', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'New note' }));
+    await screen.findByRole('button', { name: /^Untitled/, current: true });
+    await userEvent.click(screen.getByRole('button', { name: 'Sample' }));
+
+    expect(await screen.findByText('Sample loaded')).toBeInTheDocument();
+    expect(editorView().state.doc.toString()).toMatch(/^# Weekend in Lisbon/);
+    await waitFor(() => expect(titles()).toEqual(['Weekend in Lisbon', 'Welcome to Hash Mark']));
+  });
+
+  it('opens the sample as a new note instead of replacing writing', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'Sample' }));
+
+    expect(await screen.findByText('Sample opened as a new note')).toBeInTheDocument();
+    await waitFor(() => expect(titles()).toEqual(['Weekend in Lisbon', 'Welcome to Hash Mark']));
+    expect(within(sidebar()).getByRole('button', { name: /^Weekend in Lisbon/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    const welcome = (await db.notes.toArray()).find((n) => n.title === 'Welcome to Hash Mark');
+    expect(welcome?.markdown).toMatch(/^# Welcome to Hash Mark/);
+  });
+
+  it('clears the note, and Mod+Z brings the text back', async () => {
+    await renderWithNotes();
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    expect(clear).toBeEnabled();
+    await userEvent.click(clear);
+
+    expect(await screen.findByText('Cleared')).toBeInTheDocument();
+    expect(editorView().state.doc.toString()).toBe('');
+    expect(clear).toBeDisabled();
+    expect(editorView().hasFocus).toBe(true);
+
+    act(() => void undo(editorView()));
+    expect(editorView().state.doc.toString()).toMatch(/^# Welcome to Hash Mark/);
+    expect(clear).toBeEnabled();
+  });
+
+  it('saves a cleared note', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    await waitFor(async () => expect((await db.notes.toArray())[0]?.markdown).toBe(''));
+  });
+
+  it('clears from Read mode too', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('radio', { name: 'Read' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(
+      await within(screen.getByRole('main')).findByText('Nothing to read yet'),
+    ).toBeInTheDocument();
+    await waitFor(async () => expect((await db.notes.toArray())[0]?.markdown).toBe(''));
+
+    // The edit went into the note's editor history: back in Write, Mod+Z restores it.
+    await userEvent.click(screen.getByRole('radio', { name: 'Write' }));
+    const view = editorView();
+    expect(view.state.doc.toString()).toBe('');
+    act(() => void undo(view));
+    expect(view.state.doc.toString()).toMatch(/^# Welcome to Hash Mark/);
   });
 });
 

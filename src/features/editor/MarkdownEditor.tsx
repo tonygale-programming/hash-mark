@@ -1,7 +1,11 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { EditorState } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
-import { editorStateCache as stateCache } from './editorStateCache';
+import {
+  clearActiveEditor,
+  editorStateCache as stateCache,
+  setActiveEditor,
+} from './editorStateCache';
 import { editorExtensions } from './extensions';
 import './MarkdownEditor.css';
 
@@ -45,8 +49,10 @@ export function MarkdownEditor({ noteId, initialDoc, onChange, autoFocus }: Mark
       },
     });
     viewRef.current = view;
+    setActiveEditor(idRef.current, view);
     return () => {
       stateCache.set(idRef.current, view.state);
+      clearActiveEditor(view);
       view.destroy();
       viewRef.current = null;
     };
@@ -59,6 +65,7 @@ export function MarkdownEditor({ noteId, initialDoc, onChange, autoFocus }: Mark
     stateCache.set(idRef.current, view.state);
     idRef.current = noteId;
     view.setState(stateFor(noteId, initialDoc));
+    setActiveEditor(noteId, view);
   }, [noteId, initialDoc]);
 
   useEffect(() => {
