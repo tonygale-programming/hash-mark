@@ -1,4 +1,13 @@
-import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { readString, writeString } from '../../lib/storage';
 import { NARROW_QUERY, useMediaQuery } from '../../lib/useMediaQuery';
 import { ConfirmDialog, Toast, useToast } from '../../ui';
@@ -32,6 +41,20 @@ import './shell.css';
 
 const SELECTED_NOTE_KEY = 'hash-mark:selected-note';
 
+// The dialog lists the editor's commands, so it loads with them on first open.
+const ShortcutsDialog = lazy(() =>
+  import('../shortcuts/ShortcutsDialog').then((module) => ({ default: module.ShortcutsDialog })),
+);
+
+/** The editor, a field or anything editable: single-key shortcuts such as "?" must not fire there. */
+function isTypingTarget(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])') !==
+      null
+  );
+}
+
 export function AppShell() {
   const { theme, toggleTheme } = useTheme();
   const narrow = useMediaQuery(NARROW_QUERY);
@@ -45,6 +68,9 @@ export function AppShell() {
   const [query, setQuery] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Note | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  /** Mount the shortcuts dialog after its first open, then keep it so focus returns properly. */
+  const [shortcutsUsed, setShortcutsUsed] = useState(false);
   /** Latest editor text, ahead of IndexedDB while a save is pending. */
   const [draft, setDraft] = useState<{ id: string; markdown: string } | null>(null);
   /** Note whose editor should take focus (a freshly created note). */
@@ -88,6 +114,7 @@ export function AppShell() {
     }
     const command = appCommandFor(event, APP_COMMANDS);
     if (!command) return;
+    if (command.notWhileTyping && isTypingTarget(event.target)) return;
     event.preventDefault();
     command.run(appContext());
   });
@@ -216,6 +243,12 @@ export function AppShell() {
       toggleShowSyntax: () => setShowSyntax((on) => !on),
       loadSample: () => void loadSample(),
       clearNote,
+      openFile: () => fileInputRef.current?.click(),
+      download: handleDownload,
+      showShortcuts: () => {
+        setShortcutsUsed(true);
+        setShortcutsOpen(true);
+      },
     };
   }
 
@@ -234,7 +267,11 @@ export function AppShell() {
 
   return (
     <div className="app">
-      <Header theme={theme} onToggleTheme={toggleTheme} />
+      <Header
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onShowShortcuts={() => appCommand('app.showShortcuts').run(appContext())}
+      />
       <Toolbar
         mode={shownMode}
         onModeChange={setMode}
@@ -296,6 +333,11 @@ export function AppShell() {
         onCopy={note ? () => void handleCopy() : undefined}
       />
       <Toast toast={toast} />
+      {shortcutsUsed && (
+        <Suspense fallback={null}>
+          <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+        </Suspense>
+      )}
 
       <ConfirmDialog
         open={pendingDelete !== null}

@@ -34,7 +34,7 @@ Start every session: read this file, pick the next unchecked item, do it, test, 
 ## M5 — Polish
 - [ ] PWA (vite-plugin-pwa), offline
 - [ ] Code highlighting (Shiki, lazy), KaTeX, Mermaid (lazy)
-- [ ] Command palette, ? cheat sheet, Shortcuts dialog
+- [ ] Command palette (the ? key and the Shortcuts dialog are done)
 - [ ] Accessibility pass, Lighthouse ≥ 95
 
 ## Next up
@@ -43,6 +43,11 @@ keywords, syntax hints); add the insert-only items the spec lists (Table, Divide
 Diagram wait for M5) to the registry.
 
 ## Notes
+- Shortcuts dialog (as Curly Brace): header Shortcuts button or `?` (ignored while typing) opens "Keyboard
+  shortcuts", generated from the registry plus Undo/Redo for reference; two balanced columns from 800px.
+  Lazy-loaded with the editor commands. Mod+O (Open file) and Mod+S (Download) added as in Curly Brace;
+  tooltips on Open file, Download and Shortcuts show their keys. `ui/Dialog` is the shared modal (Esc,
+  outside click, focus return); ConfirmDialog is built on it.
 - Sample / Clear (as Curly Brace): app commands `app.sample` / `app.clear`. Sample fills an empty note, or opens
   as a new note when the current note has text; Clear empties the note (off when already empty). Both go
   through the editor's history (`replaceDocument` in `editorStateCache.ts`), so Mod+Z undoes them, also after

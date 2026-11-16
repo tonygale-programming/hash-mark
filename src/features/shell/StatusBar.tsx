@@ -1,5 +1,6 @@
 import { Copy, Download } from 'lucide-react';
-import { Button, Chip } from '../../ui';
+import { Button, Chip, Tooltip } from '../../ui';
+import { appCommand } from '../../commands/appCommands';
 import type { SaveStatus } from '../notes/autosave';
 import type { DocStats } from '../notes/stats';
 
@@ -55,9 +56,11 @@ export function StatusBar({ saveStatus, stats, onDownload, onCopy }: StatusBarPr
         )}
       </div>
       <div className="statusbar__group">
-        <Button icon={Download} onClick={onDownload} disabled={!onDownload}>
-          Download
-        </Button>
+        <Tooltip label="Save as a .md file" shortcut={appCommand('app.download').shortcut}>
+          <Button icon={Download} onClick={onDownload} disabled={!onDownload}>
+            Download
+          </Button>
+        </Tooltip>
         <Button icon={Copy} onClick={onCopy} disabled={!onCopy}>
           Copy
         </Button>

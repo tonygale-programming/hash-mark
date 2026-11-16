@@ -304,6 +304,55 @@ describe('Shortcuts', () => {
   });
 });
 
+describe('Shortcuts dialog', () => {
+  it('opens from the header and lists the shortcuts by group', async () => {
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('button', { name: 'Shortcuts' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Keyboard shortcuts' });
+    for (const group of ['Text', 'Blocks', 'Lists', 'Editing', 'Note', 'View']) {
+      expect(within(dialog).getByRole('region', { name: group })).toBeInTheDocument();
+    }
+    const text = within(dialog).getByRole('region', { name: 'Text' });
+    expect(within(text).getByText('Bold')).toBeInTheDocument();
+    expect(within(text).getByRole('img', { name: 'Ctrl+B' })).toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens with "?" outside the editor, but not while typing', async () => {
+    await renderWithNotes();
+    fireEvent.keyDown(editorView().contentDOM, { key: '?', code: 'Slash', shiftKey: true });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    fireEvent.keyDown(document.body, { key: '?', code: 'Slash', shiftKey: true });
+    const dialog = await screen.findByRole('dialog', { name: 'Keyboard shortcuts' });
+
+    fireEvent(dialog, new Event('cancel', { cancelable: true }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('opens a file with Mod+O and downloads with Mod+S', async () => {
+    Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:x'), revokeObjectURL: vi.fn() });
+    const downloads: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      downloads.push(this.download);
+    });
+    await renderWithNotes();
+    const input = screen.getByLabelText<HTMLInputElement>('Open Markdown files');
+    const pick = vi.spyOn(input, 'click').mockImplementation(() => {});
+
+    fireEvent.keyDown(window, { key: 'o', code: 'KeyO', ctrlKey: true });
+    expect(pick).toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: 's', code: 'KeyS', ctrlKey: true });
+    expect(downloads).toEqual(['Welcome to Hash Mark.md']);
+    click.mockRestore();
+  });
+});
+
 describe('Sample and Clear', () => {
   function titles() {
     return within(sidebar())

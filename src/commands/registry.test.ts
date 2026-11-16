@@ -114,6 +114,18 @@ describe('keymap', () => {
     ).toBe(false);
   });
 
+  it('matches "?" by the character typed, with or without Shift', () => {
+    expect(matchesShortcut(key({ key: '?', code: 'Slash', shiftKey: true }), '?', true)).toBe(true);
+    expect(matchesShortcut(key({ key: '?', code: 'Comma', shiftKey: true }), '?', false)).toBe(
+      true,
+    );
+    expect(matchesShortcut(key({ key: '?', code: 'Minus' }), '?', false)).toBe(true);
+    expect(
+      matchesShortcut(key({ key: '?', code: 'Slash', ctrlKey: true, shiftKey: true }), '?', false),
+    ).toBe(false);
+    expect(matchesShortcut(key({ key: '/', code: 'Slash' }), '?', false)).toBe(false);
+  });
+
   it('finds the app command for a key', () => {
     expect(
       appCommandFor(key({ code: 'Slash', key: '/', metaKey: true }), APP_COMMANDS, true)?.id,

@@ -55,9 +55,11 @@ export function Toolbar({
         <Button variant="main" icon={Plus} onClick={onNewNote}>
           New note
         </Button>
-        <Button icon={FolderOpen} onClick={onOpenFile}>
-          Open file
-        </Button>
+        <Tooltip label="Open a Markdown file" shortcut={appCommand('app.openFile').shortcut}>
+          <Button icon={FolderOpen} onClick={onOpenFile}>
+            Open file
+          </Button>
+        </Tooltip>
         <Button icon={sample.icon} onClick={onSample}>
           {sample.label}
         </Button>

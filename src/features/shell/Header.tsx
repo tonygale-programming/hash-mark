@@ -1,9 +1,16 @@
+import { appCommand } from '../../commands/appCommands';
 import { Code, Coffee, Hash, Keyboard, Moon, Sun } from 'lucide-react';
 import { Button, LinkButton, Tooltip } from '../../ui';
 import type { Theme } from '../theme/theme';
 import { LINKS } from '../../config';
 
-export function Header({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
+export type HeaderProps = {
+  theme: Theme;
+  onToggleTheme: () => void;
+  onShowShortcuts: () => void;
+};
+
+export function Header({ theme, onToggleTheme, onShowShortcuts }: HeaderProps) {
   const themeLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
   return (
     <header className="header">
@@ -16,9 +23,11 @@ export function Header({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: 
         <p className="brand-tagline">Markdown, made readable.</p>
       </div>
       <nav className="header__links" aria-label="App">
-        <Button variant="ghost" icon={Keyboard} collapseLabel>
-          Shortcuts
-        </Button>
+        <Tooltip label="Keyboard shortcuts" shortcut={appCommand('app.showShortcuts').shortcut}>
+          <Button variant="ghost" icon={Keyboard} collapseLabel onClick={onShowShortcuts}>
+            Shortcuts
+          </Button>
+        </Tooltip>
         <LinkButton variant="ghost" icon={Code} collapseLabel href={LINKS.github}>
           GitHub
         </LinkButton>

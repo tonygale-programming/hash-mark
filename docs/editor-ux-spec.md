@@ -43,6 +43,11 @@ portable Markdown. Syntax is learned gradually through hints.
 | Show syntax | Mod+/ |
 | Cycle mode | Mod+Shift+M |
 | Command palette | Mod+Shift+P |
+| Open file / Download | Mod+O / Mod+S (as Curly Brace) |
+| Show shortcuts | ? (not while typing) |
+
+The **Shortcuts** dialog (header button or `?`) lists every key, built from the command registry
+(`src/features/shortcuts/`), so it cannot drift from the keys that work.
 
 ## 6. Smart typing
 Implemented in `src/features/editor/smartTyping.ts`.

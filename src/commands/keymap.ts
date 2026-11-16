@@ -37,6 +37,10 @@ export function matchesShortcut(
   const parts = shortcut.split('+');
   const key = parts.pop()!;
   const mods = new Set(parts);
+  // A lone symbol such as "?": match the character typed, whatever Shift it needs on this layout.
+  if (!mods.size && key.length === 1 && !/[a-z0-9]/i.test(key)) {
+    return event.key === key && !event.metaKey && !event.ctrlKey && !event.altKey;
+  }
   const wantMeta = (mods.has('Mod') && apple) || mods.has('Meta');
   const wantCtrl = (mods.has('Mod') && !apple) || mods.has('Ctrl');
   if (event.metaKey !== wantMeta || event.ctrlKey !== wantCtrl) return false;

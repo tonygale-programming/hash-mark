@@ -1,0 +1,65 @@
+/* As in Curly Brace's shortcuts dialog */
+.shortcuts-dialog {
+  max-height: calc(100dvh - 2 * var(--space-16));
+}
+
+.shortcuts-dialog .dialog__card {
+  max-height: calc(100dvh - 2 * var(--space-16));
+  overflow-y: auto;
+}
+
+.shortcut-groups h3 {
+  margin: 0 0 var(--space-8);
+  color: var(--text-muted);
+  font: 600 11px/16px var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Each row: the action on the left, its keys on the right */
+.shortcut-list {
+  display: grid;
+  gap: var(--space-8);
+  margin: 0;
+}
+
+.shortcut-list__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.shortcut-list dt {
+  font: var(--type-body);
+}
+
+.shortcut-list dd {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+/* Groups stack in one column; 16px between groups */
+.shortcut-groups,
+.shortcut-groups__column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+/* Hash Mark has ~25 shortcuts (Curly Brace has 8): two balanced columns on wide screens so the whole
+   list, and the Close button, fit without scrolling. */
+@media (min-width: 800px) {
+  .shortcuts-dialog {
+    width: min(760px, calc(100vw - 2 * var(--space-16)));
+  }
+
+  .shortcut-groups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: var(--space-32);
+  }
+}

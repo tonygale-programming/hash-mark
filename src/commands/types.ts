@@ -33,10 +33,17 @@ export type AppCommandContext = {
   toggleShowSyntax: () => void;
   loadSample: () => void;
   clearNote: () => void;
+  openFile: () => void;
+  download: () => void;
+  showShortcuts: () => void;
 };
 
-/** Acts on the app (modes, panels), from anywhere on the page. */
+export type AppCommandGroup = 'Note' | 'View';
+
+/** Acts on the app (modes, panels, files), from anywhere on the page. */
 export type AppCommand = CommandMeta & {
-  group: 'App';
+  group: AppCommandGroup;
+  /** Ignore the key while typing in the editor or a field (single keys such as "?"). */
+  notWhileTyping?: boolean;
   run: (context: AppCommandContext) => void;
 };
