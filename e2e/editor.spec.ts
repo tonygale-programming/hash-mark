@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { openNewNote } from './helpers';
 
 test.describe('M1 editor', () => {
   test('types Markdown, autosaves, and restores after reload', async ({ page }) => {
@@ -30,10 +31,7 @@ test.describe('M1 editor', () => {
   });
 
   test('undo works and Mod+/ is left free for Show syntax', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    const editor = page.getByRole('textbox', { name: 'Note' });
-    await expect(editor).toBeFocused();
+    const editor = await openNewNote(page);
 
     await page.keyboard.type('Hello');
     await page.keyboard.press('ControlOrMeta+/');

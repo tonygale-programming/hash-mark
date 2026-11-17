@@ -1,11 +1,9 @@
 import { expect, test } from '@playwright/test';
+import { openNewNote } from './helpers';
 
 test.describe('M1 read mode', () => {
   test('renders the note, sanitized, without touching the URL fragment', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    const editor = page.getByRole('textbox', { name: 'Note' });
-    await expect(editor).toBeFocused();
+    await openNewNote(page);
     await page.keyboard.insertText(
       [
         '# Trip plan',

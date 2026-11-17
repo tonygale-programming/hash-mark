@@ -1,8 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-
-async function lines(page: Page) {
-  return page.locator('.cm-content .cm-line').allTextContents();
-}
+import { lines, openNewNote } from './helpers';
 
 /** Types like a person (the menu ignores Enter in the first 75 ms after it opens). */
 async function slash(page: Page, query: string, pick: string) {
@@ -15,9 +12,7 @@ async function slash(page: Page, query: string, pick: string) {
 
 test.describe('M2 slash menu', () => {
   test('lists blocks, filters, and inserts them', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    await expect(page.getByRole('textbox', { name: 'Note' })).toBeFocused();
+    await openNewNote(page);
 
     // "/" opens every block; Esc closes and leaves the slash as text.
     await page.keyboard.type('/');
@@ -68,9 +63,7 @@ test.describe('M2 slash menu', () => {
   });
 
   test('stays closed inside code and words', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    await expect(page.getByRole('textbox', { name: 'Note' })).toBeFocused();
+    await openNewNote(page);
     await page.keyboard.type('and/or `cd /');
     await page.waitForTimeout(150);
     await expect(page.getByRole('listbox', { name: 'Blocks' })).toHaveCount(0);

@@ -1,14 +1,9 @@
-import { expect, test, type Page } from '@playwright/test';
-
-async function lines(page: Page) {
-  return page.locator('.cm-content .cm-line').allTextContents();
-}
+import { expect, test } from '@playwright/test';
+import { lines, openNewNote } from './helpers';
 
 test.describe('M2 smart typing', () => {
   test('continues and leaves lists, closes fences and pairs', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    await expect(page.getByRole('textbox', { name: 'Note' })).toBeFocused();
+    await openNewNote(page);
 
     // "[] " makes a task; Enter continues it; Enter on the empty item leaves the list.
     await page.keyboard.type('[] milk');
@@ -42,9 +37,7 @@ test.describe('M2 smart typing', () => {
   });
 
   test('wraps a selection and keeps $ for prices', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    await expect(page.getByRole('textbox', { name: 'Note' })).toBeFocused();
+    await openNewNote(page);
 
     await page.keyboard.type('It costs $5 today');
     for (let i = 0; i < 5; i++) await page.keyboard.press('Shift+ArrowLeft');

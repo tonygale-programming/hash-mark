@@ -1,15 +1,9 @@
-import { expect, test, type Page } from '@playwright/test';
-
-async function lines(page: Page) {
-  return page.locator('.cm-content .cm-line').allTextContents();
-}
+import { expect, test } from '@playwright/test';
+import { lines, openNewNote } from './helpers';
 
 test.describe('M2 shortcuts', () => {
   test('formats with the registry shortcuts', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'New note' }).click();
-    const editor = page.getByRole('textbox', { name: 'Note' });
-    await expect(editor).toBeFocused();
+    const editor = await openNewNote(page);
 
     await page.keyboard.type('Shopping');
     await page.keyboard.press('ControlOrMeta+Alt+1');
