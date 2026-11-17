@@ -1,4 +1,14 @@
-import { Columns2, Download, Eraser, FileText, FolderOpen, Hash, Keyboard } from 'lucide-react';
+import {
+  Columns2,
+  Copy,
+  Download,
+  Eraser,
+  FileText,
+  FolderOpen,
+  Hash,
+  Keyboard,
+  Plus,
+} from 'lucide-react';
 import type { AppCommand } from './types';
 
 export const APP_COMMANDS: AppCommand[] = [
@@ -19,6 +29,14 @@ export const APP_COMMANDS: AppCommand[] = [
     shortcut: 'Mod+Shift+M',
     group: 'View',
     run: (context) => context.cycleMode(),
+  },
+  {
+    id: 'app.newNote',
+    label: 'New note',
+    icon: Plus,
+    keywords: ['create', 'add', 'blank'],
+    group: 'Note',
+    run: (context) => context.newNote(),
   },
   // Sample and Clear, as in Curly Brace (both undoable with Mod+Z while the page is open).
   {
@@ -55,6 +73,14 @@ export const APP_COMMANDS: AppCommand[] = [
     shortcut: 'Mod+S',
     group: 'Note',
     run: (context) => context.download(),
+  },
+  {
+    id: 'app.copy',
+    label: 'Copy',
+    icon: Copy,
+    keywords: ['clipboard', 'markdown source'],
+    group: 'Note',
+    run: (context) => context.copy(),
   },
   {
     id: 'app.showShortcuts',

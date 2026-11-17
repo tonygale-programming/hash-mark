@@ -13,11 +13,6 @@ export function useToast() {
   const timer = useRef<number | undefined>(undefined);
   const nextId = useRef(0);
 
-  const dismiss = useCallback(() => {
-    window.clearTimeout(timer.current);
-    setToast(null);
-  }, []);
-
   const show = useCallback((text: string, tone: ToastTone = 'default') => {
     window.clearTimeout(timer.current);
     nextId.current += 1;
@@ -30,7 +25,7 @@ export function useToast() {
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
-  return { toast, show, dismiss };
+  return { toast, show };
 }
 
 /** Polite live region: the region stays mounted so screen readers announce each message. */

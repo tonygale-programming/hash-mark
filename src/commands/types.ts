@@ -29,12 +29,14 @@ export type EditorCommand = CommandMeta & {
 };
 
 export type AppCommandContext = {
+  newNote: () => void;
   cycleMode: () => void;
   toggleShowSyntax: () => void;
   loadSample: () => void;
   clearNote: () => void;
   openFile: () => void;
   download: () => void;
+  copy: () => void;
   showShortcuts: () => void;
 };
 

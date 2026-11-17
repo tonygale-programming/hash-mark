@@ -1,5 +1,6 @@
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { CircleCheck } from 'lucide-react';
+import { buttonClassName } from './Button';
 import { Icon } from './Icon';
 import './Toggle.css';
 
@@ -24,9 +25,11 @@ export function Toggle({
     <button
       type="button"
       aria-pressed={pressed}
-      className={['btn', 'btn--outline', 'btn--has-icon', 'toggle', className]
-        .filter(Boolean)
-        .join(' ')}
+      className={buttonClassName({
+        hasIcon: true,
+        iconOnly: false,
+        className: ['toggle', className].filter(Boolean).join(' '),
+      })}
       onClick={() => onPressedChange(!pressed)}
       {...rest}
     >

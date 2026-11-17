@@ -1,19 +1,9 @@
-import {
-  lazy,
-  Suspense,
-  useDeferredValue,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { lazy, Suspense, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { readString, writeString } from '../../lib/storage';
 import { NARROW_QUERY, useMediaQuery } from '../../lib/useMediaQuery';
 import { ConfirmDialog, Toast, useToast } from '../../ui';
 import { focusEditor, forgetEditorState, replaceDocument } from '../editor/editorStateCache';
-import { APP_COMMANDS, appCommand } from '../../commands/appCommands';
-import { appCommandFor } from '../../commands/keymap';
+import { appCommand } from '../../commands/appCommands';
 import type { AppCommandContext } from '../../commands/types';
 import { effectiveMode, nextMode, type Mode } from '../editor/mode';
 import {
@@ -37,6 +27,8 @@ import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 import { StatusBar } from './StatusBar';
 import { Toolbar } from './Toolbar';
+import { useAppShortcuts } from './useAppShortcuts';
+import { useDrawer } from './useDrawer';
 import './shell.css';
 
 const SELECTED_NOTE_KEY = 'hash-mark:selected-note';
@@ -45,15 +37,6 @@ const SELECTED_NOTE_KEY = 'hash-mark:selected-note';
 const ShortcutsDialog = lazy(() =>
   import('../shortcuts/ShortcutsDialog').then((module) => ({ default: module.ShortcutsDialog })),
 );
-
-/** The editor, a field or anything editable: single-key shortcuts such as "?" must not fire there. */
-function isTypingTarget(target: EventTarget | null) {
-  return (
-    target instanceof Element &&
-    target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])') !==
-      null
-  );
-}
 
 export function AppShell() {
   const { theme, toggleTheme } = useTheme();
@@ -66,7 +49,6 @@ export function AppShell() {
   const [showSyntax, setShowSyntax] = useState(false);
   const [selectedId, setSelectedId] = useState(() => readString(SELECTED_NOTE_KEY) ?? undefined);
   const [query, setQuery] = useState('');
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<Note | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   /** Mount the shortcuts dialog after its first open, then keep it so focus returns properly. */
@@ -76,7 +58,6 @@ export function AppShell() {
   /** Note whose editor should take focus (a freshly created note). */
   const [focusNoteId, setFocusNoteId] = useState<string | null>(null);
 
-  const drawerButtonRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   /** After a delete, move focus to a note (or search) once the deleted note has left the list. */
@@ -89,8 +70,7 @@ export function AppShell() {
   // Deferred so counting never delays typing on long notes.
   const deferredMarkdown = useDeferredValue(markdown);
   const stats = useMemo(() => documentStats(deferredMarkdown), [deferredMarkdown]);
-  const drawer = narrow;
-  const drawerVisible = drawer && drawerOpen;
+  const drawer = useDrawer(narrow, searchRef);
 
   useEffect(() => {
     if (notes) writeString(SELECTED_NOTE_KEY, note?.id ?? null);
@@ -108,62 +88,32 @@ export function AppShell() {
     (item ?? searchRef.current)?.focus();
   }, [notes]);
 
-  // App-level shortcuts from the registry (Mod+/ Show syntax, Mod+Shift+M cycle mode), anywhere on
-  // the page. The editor handles its own; a dialog keeps its keys.
-  const onAppShortcut = useEffectEvent((event: KeyboardEvent) => {
-    if (event.defaultPrevented || event.isComposing || document.querySelector('dialog[open]')) {
-      return;
-    }
-    const command = appCommandFor(event, APP_COMMANDS);
-    if (!command) return;
-    if (command.notWhileTyping && isTypingTarget(event.target)) return;
-    event.preventDefault();
-    command.run(appContext());
-  });
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => onAppShortcut(event);
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
-
-  // Drawer: focus search on open, close on Esc and return focus to the Notes button.
-  useEffect(() => {
-    if (!drawerVisible) return;
-    searchRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      // Esc inside an open dialog belongs to the dialog.
-      if (event.key === 'Escape' && !document.querySelector('dialog[open]')) {
-        setDrawerOpen(false);
-        drawerButtonRef.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [drawerVisible]);
-
-  function closeDrawer() {
-    setDrawerOpen(false);
-    drawerButtonRef.current?.focus();
-  }
+  useAppShortcuts((command) => command.run(appContext()));
 
   function handleChange(id: string, text: string) {
     setDraft({ id, markdown: text });
     saver.change(id, text);
   }
 
+  /** A note picked in the list: the search stays, so the next result is one click away. */
   function selectNote(id: string) {
     void saver.flush();
     setSelectedId(id);
     setFocusNoteId(null);
   }
 
+  /** A note the app just made or opened: clear the search so it is listed, close the drawer. */
+  function showNote(id: string, { focus = false } = {}) {
+    setSelectedId(id);
+    setFocusNoteId(focus ? id : null);
+    setQuery('');
+    drawer.hide();
+  }
+
   async function handleNewNote() {
     await saver.flush();
     const created = await createNote(db);
-    setSelectedId(created.id);
-    setFocusNoteId(created.id);
-    setQuery('');
-    if (drawer) setDrawerOpen(false);
+    showNote(created.id, { focus: true });
   }
 
   async function openFiles(files: File[]) {
@@ -176,12 +126,7 @@ export function AppShell() {
     for (const [index, result] of opened.entries()) {
       last = await createNote(db, result.text, now + index);
     }
-    if (last) {
-      setSelectedId(last.id);
-      setFocusNoteId(null);
-      setQuery('');
-      if (drawer) setDrawerOpen(false);
-    }
+    if (last) showNote(last.id);
     const failed = results.length - opened.length;
     showToast(
       openSummary(results, opened.length === 1 ? last?.title : undefined),
@@ -224,10 +169,7 @@ export function AppShell() {
     }
     await saver.flush();
     const created = await createNote(db, sampleMarkdown);
-    setSelectedId(created.id);
-    setFocusNoteId(null);
-    setQuery('');
-    if (drawer) setDrawerOpen(false);
+    showNote(created.id);
     showToast('Sample opened as a new note');
   }
 
@@ -241,17 +183,24 @@ export function AppShell() {
 
   function appContext(): AppCommandContext {
     return {
+      newNote: () => void handleNewNote(),
       cycleMode: () => setMode((current) => nextMode(current, narrow)),
       toggleShowSyntax: () => setShowSyntax((on) => !on),
       loadSample: () => void loadSample(),
       clearNote,
       openFile: () => fileInputRef.current?.click(),
       download: handleDownload,
+      copy: () => void handleCopy(),
       showShortcuts: () => {
         setShortcutsUsed(true);
         setShortcutsOpen(true);
       },
     };
+  }
+
+  /** Every button that has a registry command runs it here, as its shortcut would. */
+  function runCommand(id: string) {
+    appCommand(id).run(appContext());
   }
 
   async function handleConfirmDelete() {
@@ -271,7 +220,7 @@ export function AppShell() {
       <Header
         theme={theme}
         onToggleTheme={toggleTheme}
-        onShowShortcuts={() => appCommand('app.showShortcuts').run(appContext())}
+        onShowShortcuts={() => runCommand('app.showShortcuts')}
       />
       <Toolbar
         mode={shownMode}
@@ -279,13 +228,10 @@ export function AppShell() {
         showSyntax={showSyntax}
         onShowSyntaxChange={setShowSyntax}
         narrow={narrow}
-        drawerOpen={drawerVisible}
-        onOpenDrawer={() => setDrawerOpen(true)}
-        drawerButtonRef={drawerButtonRef}
-        onNewNote={() => void handleNewNote()}
-        onOpenFile={() => fileInputRef.current?.click()}
-        onSample={() => appCommand('app.sample').run(appContext())}
-        onClear={() => appCommand('app.clear').run(appContext())}
+        drawerOpen={drawer.visible}
+        onOpenDrawer={drawer.show}
+        drawerButtonRef={drawer.buttonRef}
+        onCommand={runCommand}
         canClear={note !== undefined && markdown.trim() !== ''}
       />
       <input
@@ -307,17 +253,17 @@ export function AppShell() {
           selectedId={note?.id}
           onSelect={(id) => {
             selectNote(id);
-            if (drawer) closeDrawer();
+            if (drawer.visible) drawer.close();
           }}
           onRequestDelete={setPendingDelete}
           query={query}
           onQueryChange={setQuery}
-          drawer={drawer}
-          open={drawerOpen}
-          onClose={closeDrawer}
+          drawer={narrow}
+          open={drawer.open}
+          onClose={drawer.close}
           searchRef={searchRef}
         />
-        {drawerVisible && <div className="scrim" aria-hidden="true" onClick={closeDrawer} />}
+        {drawer.visible && <div className="scrim" aria-hidden="true" onClick={drawer.close} />}
         <EditorPane
           mode={shownMode}
           note={notes ? note : undefined}
@@ -330,8 +276,7 @@ export function AppShell() {
       <StatusBar
         saveStatus={note ? saveStatus : undefined}
         stats={note ? stats : undefined}
-        onDownload={note ? handleDownload : undefined}
-        onCopy={note ? () => void handleCopy() : undefined}
+        onCommand={note ? runCommand : undefined}
       />
       <Toast toast={toast} />
       {shortcutsUsed && (

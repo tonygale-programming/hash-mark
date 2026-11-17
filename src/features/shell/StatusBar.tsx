@@ -1,6 +1,6 @@
-import { Copy, Download } from 'lucide-react';
-import { Button, Chip, Tooltip } from '../../ui';
+import { Chip, Tooltip } from '../../ui';
 import { appCommand } from '../../commands/appCommands';
+import { CommandButton } from './CommandButton';
 import type { SaveStatus } from '../notes/autosave';
 import type { DocStats } from '../notes/stats';
 
@@ -15,12 +15,13 @@ const SAVE_CHIP = {
 export type StatusBarProps = {
   saveStatus?: SaveStatus;
   stats?: DocStats;
-  /** Download and Copy act on the current note; omitted when there is none. */
-  onDownload?: () => void;
-  onCopy?: () => void;
+  /** Runs Download or Copy on the current note; omitted when there is none (both are off). */
+  onCommand?: (id: string) => void;
 };
 
-export function StatusBar({ saveStatus, stats, onDownload, onCopy }: StatusBarProps) {
+const noop = () => {};
+
+export function StatusBar({ saveStatus, stats, onCommand }: StatusBarProps) {
   const chip = saveStatus ? SAVE_CHIP[saveStatus] : null;
   return (
     <footer className="statusbar" aria-label="Document status">
@@ -57,13 +58,13 @@ export function StatusBar({ saveStatus, stats, onDownload, onCopy }: StatusBarPr
       </div>
       <div className="statusbar__group">
         <Tooltip label="Save as a .md file" shortcut={appCommand('app.download').shortcut}>
-          <Button icon={Download} onClick={onDownload} disabled={!onDownload}>
-            Download
-          </Button>
+          <CommandButton
+            command="app.download"
+            onCommand={onCommand ?? noop}
+            disabled={!onCommand}
+          />
         </Tooltip>
-        <Button icon={Copy} onClick={onCopy} disabled={!onCopy}>
-          Copy
-        </Button>
+        <CommandButton command="app.copy" onCommand={onCommand ?? noop} disabled={!onCommand} />
       </div>
     </footer>
   );

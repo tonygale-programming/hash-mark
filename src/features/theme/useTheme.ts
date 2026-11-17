@@ -5,21 +5,13 @@ function systemPrefersDark() {
   return typeof window.matchMedia === 'function' && window.matchMedia(DARK_QUERY).matches;
 }
 
-function safeLocalStorage(): Storage | undefined {
-  try {
-    return window.localStorage;
-  } catch {
-    return undefined;
-  }
-}
-
 /**
  * As in Curly Brace: with no saved choice there is no data-theme and the CSS follows the system
  * (color-scheme + light-dark()); pressing the theme button saves a choice and sets data-theme.
  * `theme` is the theme in effect, for the button's icon and label.
  */
 export function useTheme() {
-  const [saved, setSaved] = useState<Theme | null>(() => readStoredTheme(safeLocalStorage()));
+  const [saved, setSaved] = useState<Theme | null>(() => readStoredTheme());
   const [systemDark, setSystemDark] = useState(systemPrefersDark);
   const theme = resolveTheme(saved, systemDark);
 
@@ -39,7 +31,7 @@ export function useTheme() {
 
   const toggleTheme = useCallback(() => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
-    writeStoredTheme(safeLocalStorage(), next);
+    writeStoredTheme(next);
     setSaved(next);
   }, [theme]);
 

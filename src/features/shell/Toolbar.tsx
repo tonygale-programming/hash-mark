@@ -1,8 +1,9 @@
 import type { Ref } from 'react';
-import { FolderOpen, Link, PanelLeft, Plus } from 'lucide-react';
+import { Link, PanelLeft } from 'lucide-react';
 import { Button, SegmentedControl, Toggle, Tooltip } from '../../ui';
 import { appCommand } from '../../commands/appCommands';
 import { availableModes, type Mode } from '../editor/mode';
+import { CommandButton } from './CommandButton';
 
 export type ToolbarProps = {
   mode: Mode;
@@ -13,10 +14,8 @@ export type ToolbarProps = {
   drawerOpen: boolean;
   onOpenDrawer: () => void;
   drawerButtonRef: Ref<HTMLButtonElement>;
-  onNewNote: () => void;
-  onOpenFile: () => void;
-  onSample: () => void;
-  onClear: () => void;
+  /** Runs an app command by id (New note, Open file, Sample, Clear). */
+  onCommand: (id: string) => void;
   /** Clear is off when the note is already empty (as in Curly Brace). */
   canClear: boolean;
 };
@@ -30,14 +29,9 @@ export function Toolbar({
   drawerOpen,
   onOpenDrawer,
   drawerButtonRef,
-  onNewNote,
-  onOpenFile,
-  onSample,
-  onClear,
+  onCommand,
   canClear,
 }: ToolbarProps) {
-  const sample = appCommand('app.sample');
-  const clear = appCommand('app.clear');
   return (
     <div className="toolbar">
       <div className="toolbar__group">
@@ -52,17 +46,11 @@ export function Toolbar({
             Notes
           </Button>
         )}
-        <Button variant="main" icon={Plus} onClick={onNewNote}>
-          New note
-        </Button>
+        <CommandButton variant="main" command="app.newNote" onCommand={onCommand} />
         <Tooltip label="Open a Markdown file" shortcut={appCommand('app.openFile').shortcut}>
-          <Button icon={FolderOpen} onClick={onOpenFile}>
-            Open file
-          </Button>
+          <CommandButton command="app.openFile" onCommand={onCommand} />
         </Tooltip>
-        <Button icon={sample.icon} onClick={onSample}>
-          {sample.label}
-        </Button>
+        <CommandButton command="app.sample" onCommand={onCommand} />
         <Tooltip label="Cycle mode" shortcut={appCommand('app.cycleMode').shortcut}>
           <SegmentedControl
             label="Mode"
@@ -82,9 +70,7 @@ export function Toolbar({
         <Button icon={Link} disabled>
           Share link
         </Button>
-        <Button icon={clear.icon} onClick={onClear} disabled={!canClear}>
-          {clear.label}
-        </Button>
+        <CommandButton command="app.clear" onCommand={onCommand} disabled={!canClear} />
       </div>
     </div>
   );

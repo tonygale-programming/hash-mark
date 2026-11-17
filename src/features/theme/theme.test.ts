@@ -1,6 +1,8 @@
 import { readStoredTheme, resolveTheme, THEME_STORAGE_KEY, writeStoredTheme } from './theme';
 
 describe('theme', () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it('prefers a saved theme over the system preference', () => {
     expect(resolveTheme('light', true)).toBe('light');
     expect(resolveTheme('dark', false)).toBe('dark');
@@ -11,33 +13,25 @@ describe('theme', () => {
     expect(resolveTheme(null, false)).toBe('light');
   });
 
-  it('ignores unknown stored values', () => {
-    expect(readStoredTheme({ getItem: () => 'sepia' })).toBeNull();
-    expect(readStoredTheme({ getItem: () => null })).toBeNull();
-    expect(readStoredTheme(undefined)).toBeNull();
+  it('ignores missing and unknown stored values', () => {
+    expect(readStoredTheme()).toBeNull();
+    localStorage.setItem(THEME_STORAGE_KEY, 'sepia');
+    expect(readStoredTheme()).toBeNull();
   });
 
   it('survives storage that throws', () => {
-    const throwing = {
-      getItem: () => {
-        throw new Error('blocked');
-      },
-      setItem: () => {
-        throw new Error('blocked');
-      },
+    const blocked = () => {
+      throw new Error('blocked');
     };
-    expect(readStoredTheme(throwing)).toBeNull();
-    expect(() => writeStoredTheme(throwing, 'dark')).not.toThrow();
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(blocked);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(blocked);
+    expect(readStoredTheme()).toBeNull();
+    expect(() => writeStoredTheme('dark')).not.toThrow();
   });
 
   it('round-trips through storage', () => {
-    const map = new Map<string, string>();
-    const storage = {
-      getItem: (key: string) => map.get(key) ?? null,
-      setItem: (key: string, value: string) => void map.set(key, value),
-    };
-    writeStoredTheme(storage, 'dark');
-    expect(map.get(THEME_STORAGE_KEY)).toBe('dark');
-    expect(readStoredTheme(storage)).toBe('dark');
+    writeStoredTheme('dark');
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('dark');
+    expect(readStoredTheme()).toBe('dark');
   });
 });
