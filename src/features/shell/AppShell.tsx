@@ -100,6 +100,8 @@ export function AppShell() {
     const pending = afterDelete.current;
     if (!pending || !notes || notes.some((n) => n.id === pending.deletedId)) return;
     afterDelete.current = null;
+    // Here, not in the delete handler: the editor parks the note's state when it switches away.
+    forgetEditorState(pending.deletedId);
     const item = pending.focusId
       ? document.querySelector<HTMLElement>(`[data-note-id="${CSS.escape(pending.focusId)}"]`)
       : null;
@@ -259,7 +261,6 @@ export function AppShell() {
     const focusId = wasSelected ? neighborId(notes, id) : note?.id;
     if (wasSelected) setSelectedId(focusId);
     saver.cancel(id);
-    forgetEditorState(id);
     afterDelete.current = { deletedId: id, focusId };
     setPendingDelete(null);
     await deleteNote(db, id);

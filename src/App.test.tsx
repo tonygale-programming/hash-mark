@@ -3,6 +3,7 @@ import { undo } from '@codemirror/commands';
 import { EditorView } from '@codemirror/view';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
+import { editorStateCache } from './features/editor/editorStateCache';
 import { db } from './features/notes/db';
 import { createNote } from './features/notes/notesStore';
 import { THEME_STORAGE_KEY } from './features/theme/theme';
@@ -42,6 +43,8 @@ describe('App shell', () => {
     expect(screen.getByRole('banner')).toHaveTextContent('Hash Mark');
     expect(screen.getByRole('button', { name: 'New note' })).toBeInTheDocument();
     expect(screen.getByRole('radiogroup', { name: 'Mode' })).toBeInTheDocument();
+    // Not built yet (M3): shown, but off rather than silently doing nothing.
+    expect(screen.getByRole('button', { name: 'Share link' })).toBeDisabled();
     expect(screen.getByRole('main', { name: 'Document' })).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Saved');
   });
@@ -131,6 +134,7 @@ describe('Notes', () => {
   it('deletes after confirming and selects the next note', async () => {
     await createNote(db, '# Older note', Date.now() - 60_000);
     await renderWithNotes();
+    const welcomeId = (await db.notes.toArray()).find((n) => n.title.startsWith('Welcome'))!.id;
     await userEvent.click(
       within(sidebar()).getByRole('button', { name: 'Delete note “Welcome to Hash Mark”' }),
     );
@@ -142,6 +146,8 @@ describe('Notes', () => {
     const next = within(sidebar()).getByRole('button', { name: /^Older note/ });
     expect(next).toHaveAttribute('aria-current', 'true');
     await waitFor(() => expect(next).toHaveFocus());
+    // The deleted note's editor state (text and undo history) is not kept.
+    expect(editorStateCache.has(welcomeId)).toBe(false);
   });
 
   it('shows empty states when the last note is deleted', async () => {
@@ -405,6 +411,19 @@ describe('Sample and Clear', () => {
     await renderWithNotes();
     await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
     await waitFor(async () => expect((await db.notes.toArray())[0]?.markdown).toBe(''));
+  });
+
+  it('shows the cleared text when switching to Write before the save', async () => {
+    await createNote(db, '# Other note', Date.now() - 60_000);
+    await renderWithNotes();
+    await userEvent.click(screen.getByRole('radio', { name: 'Read' }));
+    // Never opened in the editor, so it has no editor state yet.
+    await userEvent.click(within(sidebar()).getByRole('button', { name: /^Other note/ }));
+    await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Write' }));
+
+    await screen.findByRole('textbox', { name: 'Note' });
+    expect(editorView().state.doc.toString()).toBe('');
   });
 
   it('clears from Read mode too', async () => {

@@ -78,7 +78,10 @@ export function Toolbar({
         </Tooltip>
       </div>
       <div className="toolbar__group">
-        <Button icon={Link}>Share link</Button>
+        {/* Off until share links are built (PROGRESS.md, M3). */}
+        <Button icon={Link} disabled>
+          Share link
+        </Button>
         <Button icon={clear.icon} onClick={onClear} disabled={!canClear}>
           {clear.label}
         </Button>

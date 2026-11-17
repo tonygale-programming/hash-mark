@@ -45,7 +45,8 @@ export function EditorPane({
     <Suspense fallback={<div className="editor-host" aria-busy="true" />}>
       <MarkdownEditor
         noteId={note.id}
-        initialDoc={note.markdown}
+        // The live text: Sample or Clear in Read mode may not be saved yet when the editor opens.
+        initialDoc={markdown}
         onChange={onChange}
         autoFocus={autoFocus}
       />
