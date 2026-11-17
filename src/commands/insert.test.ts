@@ -1,4 +1,3 @@
-import type { EditorState } from '@codemirror/state';
 import {
   CALLOUT_TEMPLATE,
   DIVIDER_TEMPLATE,
@@ -7,13 +6,7 @@ import {
   insertBlock,
   insertInline,
 } from './insert';
-import { marked, stateFrom } from './testing';
-
-function run(insert: ReturnType<typeof insertBlock>, input: string): string {
-  let state: EditorState = stateFrom(input);
-  insert({ state, dispatch: (tr) => (state = tr.state) });
-  return marked(state);
-}
+import { run } from './testing';
 
 describe('insert commands', () => {
   const table = insertBlock(TABLE_TEMPLATE);

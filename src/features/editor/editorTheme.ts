@@ -144,20 +144,6 @@ export const editorTheme = EditorView.theme({
     alignItems: 'center',
     gap: 'var(--space-4)',
   },
-  '.slash-menu__footer .keycap': {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '20px',
-    height: '20px',
-    padding: '0 var(--space-4)',
-    border: '1px solid var(--border-subtle)',
-    borderBottomWidth: '2px',
-    borderRadius: 'var(--radius-small)',
-    backgroundColor: 'var(--surface)',
-    color: 'var(--text-muted)',
-    font: 'var(--type-kbd)',
-  },
 
   '.cm-md-codeblock-last': {
     paddingBottom: '8px',

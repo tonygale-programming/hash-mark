@@ -1,8 +1,5 @@
 import { snippet } from '@codemirror/autocomplete';
-import type { EditorState, Transaction } from '@codemirror/state';
-
-/** What an insert needs: a view, or a state + dispatch in tests. */
-export type InsertTarget = { state: EditorState; dispatch: (tr: Transaction) => void };
+import type { StateCommand } from '@codemirror/state';
 
 /**
  * Templates use CodeMirror snippet fields: `${name}` is a placeholder to type over, Tab moves to the
@@ -21,8 +18,8 @@ const blank = (text: string) => !text.trim();
  * or callout never swallows the next paragraph and a divider never turns the line above into a
  * heading.
  */
-export function insertBlock(template: string) {
-  return (target: InsertTarget): boolean => {
+export function insertBlock(template: string): StateCommand {
+  return (target) => {
     const { state } = target;
     if (state.readOnly) return false;
     const line = state.doc.lineAt(state.selection.main.head);
@@ -37,8 +34,8 @@ export function insertBlock(template: string) {
 }
 
 /** Inserts inline text at the cursor (over the selection). */
-export function insertInline(template: string) {
-  return (target: InsertTarget): boolean => {
+export function insertInline(template: string): StateCommand {
+  return (target) => {
     if (target.state.readOnly) return false;
     const { from, to } = target.state.selection.main;
     snippet(template)(target, null, from, to);

@@ -10,7 +10,9 @@ import {
   StateField,
   type EditorState,
   type Extension,
+  type Line,
   type StateCommand,
+  type Transaction,
   type TransactionSpec,
 } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
@@ -26,7 +28,7 @@ import { enclosingNode } from '../../commands/tree';
  * - "[] " (or "[ ] ", "[x] ") at the start of a line becomes a task.
  * - Typing ( [ ` * auto-closes; typing the closer steps over it; Backspace removes an empty pair.
  *   "**" opens bold as **‸**. Selected text is wrapped by * _ ~ ` $ ( [.
- *   $ only wraps for now; auto-closing it waits for math rendering (M5).
+ *   $ only wraps for now; auto-closing it waits for math rendering (KaTeX, M7).
  */
 
 const AUTO_CLOSE: Record<string, string> = { '(': ')', '[': ']', '`': '`', '*': '*' };
@@ -34,6 +36,10 @@ const WRAP: Record<string, string> = { ...AUTO_CLOSE, _: '_', '~': '~', $: '$' }
 const STEP_OVER = new Set([')', ']', '`', '*']);
 const WORD_CHAR = /[\p{L}\p{N}_]/u;
 const BEFORE_CLOSER = /^$|[\s)\]}.,;:!?'"]/;
+
+/** Indent and quote markers at the start of a line, such as "  > > ". */
+const LINE_PREFIX = /^[ \t]*(?:>[ \t]?)*/;
+const linePrefix = (text: string) => LINE_PREFIX.exec(text)?.[0] ?? '';
 
 /** Closers this extension inserted, so stepping over never skips characters the person typed. */
 const addClosers = StateEffect.define<number[]>();
@@ -97,9 +103,10 @@ export function smartInput(state: EditorState, text: string): TransactionSpec | 
 
   // "[] " at the start of a line (after a quote or bullet) → task.
   if (text === ' ' && line.to === pos) {
-    const rule = /^([ \t]*(?:>[ \t]?)*)(?:([-*+])[ \t]+)?\[([ xX]?)\]$/.exec(before);
+    const prefix = linePrefix(before);
+    const rule = /^(?:([-*+])[ \t]+)?\[([ xX]?)\]$/.exec(before.slice(prefix.length));
     if (rule) {
-      const [, prefix = '', bullet = '-', mark = ''] = rule;
+      const [, bullet = '-', mark = ''] = rule;
       const insert = `${prefix}${bullet} [${mark.toLowerCase() === 'x' ? 'x' : ' '}] `;
       return {
         changes: { from: line.from, to: pos, insert },
@@ -135,9 +142,9 @@ export function smartInput(state: EditorState, text: string): TransactionSpec | 
   if (text === '`' && prev === '`') return null; // building a ``` fence
 
   if (text === '*') {
-    const linePrefix = /^[ \t]*(?:>[ \t]?)*$/;
-    if (linePrefix.test(before)) return null; // could be a "* " bullet
-    if (/^[ \t]*(?:>[ \t]?)*\*$/.test(before)) {
+    const prefix = linePrefix(before);
+    if (before === prefix) return null; // could be a "* " bullet
+    if (before === prefix + '*') {
       // A lone star at the line start plus another: bold, "**‸**".
       return {
         changes: { from: pos, insert: '***' },
@@ -180,6 +187,55 @@ const FENCE_LINE = /^([ \t]*)(`{3,}|~{3,})([^`]*)$/;
 const DASH_BREAK = /^ {0,3}-(?:[ \t]*-){2,}[ \t]*$/;
 const continueMarkup = insertNewlineContinueMarkupCommand({ nonTightLists: false });
 
+/** Enter at the end of an opening fence with no closing fence yet: adds one, cursor inside. */
+function closeFence(state: EditorState, line: Line): Transaction | null {
+  const fence = FENCE_LINE.exec(line.text);
+  if (!fence) return null;
+  const [, indent = '', marker = ''] = fence;
+  const fenceStart = line.from + indent.length;
+  const block = enclosingNode(state, fenceStart, fenceStart, 'FencedCode');
+  if (!block || block.from !== fenceStart) return null;
+  const last = state.doc.lineAt(block.to);
+  const closer = new RegExp(`^[ \\t]*${marker[0] === '`' ? '`' : '~'}{${marker.length},}[ \\t]*$`);
+  if (last.number > line.number && closer.test(last.text)) return null;
+  return state.update({
+    changes: { from: line.to, insert: `\n${indent}\n${indent}${marker}` },
+    selection: EditorSelection.cursor(line.to + 1 + indent.length),
+    scrollIntoView: true,
+    userEvent: 'input',
+  });
+}
+
+/** Enter after "---" right under a paragraph (which would make it a heading): keeps it a divider. */
+function keepDivider(state: EditorState, line: Line): Transaction | null {
+  if (line.number === 1 || !DASH_BREAK.test(line.text)) return null;
+  const previous = state.doc.line(line.number - 1);
+  const p = parseLine(previous.text);
+  const paragraph =
+    p.content.trim() && !p.quote && !p.list && !p.heading && !previous.text.includes('|');
+  if (!paragraph) return null;
+  return state.update({
+    changes: [
+      { from: line.from, insert: '\n' },
+      { from: line.to, insert: '\n' },
+    ],
+    selection: EditorSelection.cursor(line.to + 2),
+    scrollIntoView: true,
+    userEvent: 'input',
+  });
+}
+
+/** Enter on an empty quote line: leaves the quote (one level) instead of continuing it. */
+function leaveQuote(state: EditorState, line: Line): Transaction | null {
+  if (!line.text.includes('>') || linePrefix(line.text) !== line.text) return null;
+  const insert = line.text.replace(/>[ \t]?$/, '').replace(/[ \t]+$/, '');
+  return state.update({
+    changes: { from: line.from, to: line.to, insert },
+    selection: EditorSelection.cursor(line.from + insert.length),
+    userEvent: 'delete',
+  });
+}
+
 /** Enter: the special cases above, then list/quote continuation, else a plain new line. */
 export const smartEnter: StateCommand = (target) => {
   const { state, dispatch } = target;
@@ -187,74 +243,14 @@ export const smartEnter: StateCommand = (target) => {
   if (state.readOnly || state.selection.ranges.length > 1 || !range.empty) {
     return continueMarkup(target);
   }
-  const pos = range.head;
-  const line = state.doc.lineAt(pos);
-  const atEnd = pos === line.to;
-
-  // Opening fence with no closing fence yet: add one, cursor inside.
-  const fence = atEnd ? FENCE_LINE.exec(line.text) : null;
-  if (fence) {
-    const [, indent = '', marker = ''] = fence;
-    const fenceStart = line.from + indent.length;
-    const block = enclosingNode(state, fenceStart, fenceStart, 'FencedCode');
-    const opensHere = block !== null && block.from === fenceStart;
-    const last = block ? state.doc.lineAt(block.to) : null;
-    const closed =
-      block &&
-      last &&
-      last.number > line.number &&
-      new RegExp(`^[ \\t]*${marker[0] === '`' ? '`' : '~'}{${marker.length},}[ \\t]*$`).test(
-        last.text,
-      );
-    if (opensHere && !closed) {
-      dispatch(
-        state.update({
-          changes: { from: pos, insert: `\n${indent}\n${indent}${marker}` },
-          selection: EditorSelection.cursor(pos + 1 + indent.length),
-          scrollIntoView: true,
-          userEvent: 'input',
-        }),
-      );
-      return true;
-    }
-  }
-
-  // "---" right under a paragraph would make it a heading: keep it a divider.
-  if (atEnd && line.number > 1 && DASH_BREAK.test(line.text)) {
-    const previous = state.doc.line(line.number - 1);
-    const p = parseLine(previous.text);
-    const paragraph =
-      p.content.trim() && !p.quote && !p.list && !p.heading && !previous.text.includes('|');
-    if (paragraph) {
-      dispatch(
-        state.update({
-          changes: [
-            { from: line.from, insert: '\n' },
-            { from: pos, insert: '\n' },
-          ],
-          selection: EditorSelection.cursor(pos + 2),
-          scrollIntoView: true,
-          userEvent: 'input',
-        }),
-      );
-      return true;
-    }
-  }
-
-  // Empty quote line: leave the quote (one level) instead of continuing it.
-  if (atEnd && /^[ \t]*(?:>[ \t]?)+$/.test(line.text)) {
-    const insert = line.text.replace(/>[ \t]?$/, '').replace(/[ \t]+$/, '');
-    dispatch(
-      state.update({
-        changes: { from: line.from, to: line.to, insert },
-        selection: EditorSelection.cursor(line.from + insert.length),
-        userEvent: 'delete',
-      }),
-    );
-    return true;
-  }
-
-  return continueMarkup(target);
+  const line = state.doc.lineAt(range.head);
+  const tr =
+    range.head === line.to
+      ? (closeFence(state, line) ?? keepDivider(state, line) ?? leaveQuote(state, line))
+      : null;
+  if (!tr) return continueMarkup(target);
+  dispatch(tr);
+  return true;
 };
 
 export function smartTyping(): Extension {

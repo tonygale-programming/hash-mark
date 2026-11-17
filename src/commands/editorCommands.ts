@@ -262,3 +262,9 @@ export const EDITOR_COMMANDS: EditorCommand[] = [
     run: indentList(-1),
   },
 ];
+
+export function editorCommand(id: string): EditorCommand {
+  const command = EDITOR_COMMANDS.find((c) => c.id === id);
+  if (!command) throw new Error(`Unknown editor command: ${id}`);
+  return command;
+}

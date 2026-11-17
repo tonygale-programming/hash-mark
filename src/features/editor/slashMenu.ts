@@ -6,15 +6,15 @@ import {
   type CompletionResult,
 } from '@codemirror/autocomplete';
 import { EditorState, type Extension } from '@codemirror/state';
-import { EditorView, ViewPlugin, tooltips, type ViewUpdate } from '@codemirror/view';
-import { EDITOR_COMMANDS } from '../../commands/editorCommands';
+import { EditorView, ViewPlugin, type ViewUpdate } from '@codemirror/view';
+import { editorCommand } from '../../commands/editorCommands';
 import { parseLine, prefixOf } from '../../commands/lines';
 import { searchCommands } from '../../commands/search';
 import { markdownTree, type SyntaxNode } from '../../commands/tree';
 import type { EditorCommand } from '../../commands/types';
 import { iconElement } from '../../ui/iconElement';
 
-/** The slash menu's items, in the spec's order (docs/editor-ux-spec.md §3). Math and Diagram come in M5. */
+/** The slash menu's items, in the spec's order (docs/editor-ux-spec.md §3). Math and Diagram come with KaTeX and Mermaid (M7). */
 export const SLASH_ITEM_IDS = [
   'block.heading1',
   'block.heading2',
@@ -34,11 +34,7 @@ export const SLASH_ITEM_IDS = [
 /** Items that insert text where the cursor is; the others act on the whole line. */
 const INLINE_ITEMS = new Set<string>(['block.image', 'text.link']);
 
-const SLASH_COMMANDS: EditorCommand[] = SLASH_ITEM_IDS.map((id) => {
-  const command = EDITOR_COMMANDS.find((c) => c.id === id);
-  if (!command) throw new Error(`Slash menu: no command "${id}"`);
-  return command;
-});
+const SLASH_COMMANDS: EditorCommand[] = SLASH_ITEM_IDS.map((id) => editorCommand(id));
 
 /** No menu inside code, raw HTML or URLs: a "/" there is just a character. */
 const NO_MENU_IN = new Set([
@@ -131,6 +127,9 @@ function keyHint(keys: string, label: string): HTMLElement {
 /** "↑↓ Navigate · ↵ Insert · Esc Close" under the list (autocomplete has no footer of its own). */
 const footer = ViewPlugin.fromClass(
   class {
+    /** One measure request per frame, however many updates come in. */
+    readonly measure = { key: this, read: () => null, write: () => this.add() };
+
     view: EditorView;
 
     constructor(view: EditorView) {
@@ -139,7 +138,7 @@ const footer = ViewPlugin.fromClass(
 
     update(update: ViewUpdate) {
       if (completionStatus(update.state) !== 'active') return;
-      this.view.requestMeasure({ read: () => null, write: () => this.add() });
+      this.view.requestMeasure(this.measure);
     }
 
     add() {
@@ -167,13 +166,6 @@ export function slashMenu(): Extension {
       tooltipClass: () => 'slash-menu',
       optionClass: () => 'slash-menu__option',
       addToOptions: [{ render: iconTile, position: 20 }],
-    }),
-    // Keep menus inside the page gutter (16px on phones), never flush with the screen edge.
-    tooltips({
-      tooltipSpace: (view) => {
-        const { innerWidth, innerHeight } = view.dom.ownerDocument.defaultView ?? window;
-        return { top: 0, left: 16, right: innerWidth - 16, bottom: innerHeight };
-      },
     }),
     // Screen readers announce the list as "Blocks".
     EditorState.phrases.of({ Completions: 'Blocks' }),

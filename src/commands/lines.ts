@@ -70,22 +70,24 @@ export function selectedLines(state: EditorState): Line[] {
   return [...seen.values()].sort((a, b) => a.number - b.number);
 }
 
+/** Returns the new parsed line, or null to leave it. Called for every selected line, in order. */
+type LineEdit = (line: ParsedLine, index: number) => ParsedLine | null;
+
 /**
  * Rewrites the Markdown prefix of each selected line (the content after it is never touched, so the
- * cursor keeps its place in the text). `edit` returns the new parsed line, or null to leave it.
+ * cursor keeps its place in the text). `makeEdit` sees all the selected lines once, for checks such
+ * as "do all lines already have this?", and returns the per-line edit.
  */
-export function editLinePrefixes(
-  state: EditorState,
-  edit: (line: ParsedLine, index: number, all: ParsedLine[]) => ParsedLine | null,
-) {
+export function editLinePrefixes(state: EditorState, makeEdit: (all: ParsedLine[]) => LineEdit) {
   const lines = selectedLines(state);
   const parsed = lines.map((line) => parseLine(line.text));
+  const edit = makeEdit(parsed);
   const changes: ChangeSpec[] = [];
   /** Old prefix end → new prefix end, per changed line, to keep cursors out of the new prefix. */
   const prefixes: { from: number; oldEnd: number; newLength: number }[] = [];
   lines.forEach((line, index) => {
     const before = parsed[index]!;
-    const after = edit(before, index, parsed);
+    const after = edit(before, index);
     if (!after) return;
     const oldPrefix = line.text.length - before.content.length;
     const newPrefix = prefixOf(after);
@@ -117,12 +119,11 @@ export function editLinePrefixes(
   });
 }
 
-function lineCommand(
-  edit: (line: ParsedLine, index: number, all: ParsedLine[]) => ParsedLine | null,
-): StateCommand {
+/** A command that rewrites each selected line's prefix (see editLinePrefixes). */
+function lineCommand(makeEdit: (all: ParsedLine[]) => LineEdit): StateCommand {
   return ({ state, dispatch }) => {
     if (state.readOnly) return false;
-    const tr = editLinePrefixes(state, edit);
+    const tr = editLinePrefixes(state, makeEdit);
     if (tr) dispatch(tr);
     return true;
   };
@@ -130,44 +131,64 @@ function lineCommand(
 
 const isBlank = (line: ParsedLine) => !prefixOf(line).trim() && !line.content.trim();
 
+/** True when there is at least one non-blank line and every non-blank line passes `test`. */
+function allContent(all: ParsedLine[], test: (line: ParsedLine) => boolean): boolean {
+  const content = all.filter((l) => !isBlank(l));
+  return content.length > 0 && content.every(test);
+}
+
 /** Heading 1–3: sets the level (dropping list markers), or removes it if all lines already have it. */
 export function toggleHeading(level: number): StateCommand {
-  return lineCommand((line, _i, all) => {
-    const content = all.filter((l) => !isBlank(l));
-    const allAtLevel = content.length > 0 && content.every((l) => l.heading === level);
-    if (allAtLevel) return { ...line, heading: 0 };
-    if (isBlank(line) && all.length > 1) return null;
-    return { ...line, indent: '', inner: '', heading: level, list: null, task: null };
+  return lineCommand((all) => {
+    if (allContent(all, (l) => l.heading === level)) return (line) => ({ ...line, heading: 0 });
+    return (line) => {
+      if (isBlank(line) && all.length > 1) return null;
+      return { ...line, indent: '', inner: '', heading: level, list: null, task: null };
+    };
   });
 }
 
 /** Bulleted / numbered / task list: applies the kind (numbering 1…n), or removes it if all have it. */
 export function toggleList(kind: ListKind): StateCommand {
-  return lineCommand((line, index, all) => {
-    const content = all.filter((l) => !isBlank(l));
-    const allOfKind = content.length > 0 && content.every((l) => listKind(l) === kind);
-    if (allOfKind) return { ...line, list: null, task: null };
-    if (isBlank(line) && all.length > 1) return null;
-    const number = Math.max(1, all.slice(0, index + 1).filter((l) => !isBlank(l)).length);
-    return {
-      ...line,
-      heading: 0,
-      list: kind === 'ordered' ? `${number}.` : listKind(line) === 'bullet' ? line.list : '-',
-      task: kind === 'task' ? (line.task ?? ' ') : null,
+  return lineCommand((all) => {
+    if (allContent(all, (l) => listKind(l) === kind)) {
+      return (line) => ({ ...line, list: null, task: null });
+    }
+    let count = 0;
+    return (line) => {
+      const blank = isBlank(line);
+      if (!blank) count++;
+      if (blank && all.length > 1) return null;
+      return {
+        ...line,
+        heading: 0,
+        list:
+          kind === 'ordered'
+            ? `${Math.max(1, count)}.`
+            : listKind(line) === 'bullet'
+              ? line.list
+              : '-',
+        task: kind === 'task' ? (line.task ?? ' ') : null,
+      };
     };
   });
 }
 
 /** Quote: adds "> " to every line, or removes one level if every non-blank line is quoted. */
-export const toggleQuote: StateCommand = lineCommand((line, _i, all) => {
-  const content = all.filter((l) => !isBlank(l));
-  const allQuoted = content.length > 0 && content.every((l) => l.quote.trim());
-  if (allQuoted) return { ...line, quote: line.quote.replace(/^>[ \t]?/, '') };
-  return { ...line, indent: '', quote: '> ' + line.quote, inner: line.quote ? line.inner : '' };
+export const toggleQuote: StateCommand = lineCommand((all) => {
+  if (allContent(all, (l) => !!l.quote.trim())) {
+    return (line) => ({ ...line, quote: line.quote.replace(/^>[ \t]?/, '') });
+  }
+  return (line) => ({
+    ...line,
+    indent: '',
+    quote: '> ' + line.quote,
+    inner: line.quote ? line.inner : '',
+  });
 });
 
 /** Toggle task: checks/unchecks a task; turns a list item or a plain line into an open task. */
-export const toggleTask: StateCommand = lineCommand((line, _i, all) => {
+export const toggleTask: StateCommand = lineCommand((all) => (line) => {
   if (isBlank(line) && all.length > 1) return null;
   if (line.task) return { ...line, task: line.task === 'x' ? ' ' : 'x' };
   return {
@@ -184,7 +205,7 @@ export function indentList(direction: 1 | -1): StateCommand {
     if (state.readOnly) return false;
     const lines = selectedLines(state).map((l) => parseLine(l.text));
     if (!lines.some((l) => l.list)) return false;
-    const tr = editLinePrefixes(state, (line) => {
+    const tr = editLinePrefixes(state, () => (line) => {
       if (!line.list) return null;
       const width = line.list.length + 1;
       if (direction === 1) return { ...line, indent: line.indent + ' '.repeat(width) };

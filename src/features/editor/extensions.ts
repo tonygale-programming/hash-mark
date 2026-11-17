@@ -1,7 +1,7 @@
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import type { Extension } from '@codemirror/state';
-import { EditorView, keymap, placeholder } from '@codemirror/view';
+import { EditorView, keymap, placeholder, tooltips } from '@codemirror/view';
 import { editorTheme } from './editorTheme';
 import { markdownStyles } from './markdownStyles';
 import { slashMenu } from './slashMenu';
@@ -14,6 +14,14 @@ const RESERVED_KEYS = new Set(['Mod-/', 'Alt-A', 'Mod-i', 'Mod-Enter']);
 
 export const EDITOR_PLACEHOLDER = 'Type / for blocks, or just start writing';
 
+/** Keeps every editor tooltip inside the page gutter (16px on phones), never flush with the screen edge. */
+export const editorTooltips: Extension = tooltips({
+  tooltipSpace: (view) => {
+    const { innerWidth, innerHeight } = view.dom.ownerDocument.defaultView ?? window;
+    return { top: 0, left: 16, right: innerWidth - 16, bottom: innerHeight };
+  },
+});
+
 export function editorExtensions(): Extension[] {
   return [
     // GFM: tables, strikethrough, task lists, autolinks. Its Enter/Backspace keymap is replaced by
@@ -22,6 +30,7 @@ export function editorExtensions(): Extension[] {
     smartTyping(),
     // Its keys (arrows, Enter, Esc) take precedence while the menu is open.
     slashMenu(),
+    editorTooltips,
     history(),
     // Registry shortcuts first; a command that does not apply falls through to the defaults.
     keymap.of(editorKeyBindings(EDITOR_COMMANDS)),
