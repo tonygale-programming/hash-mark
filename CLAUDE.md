@@ -38,4 +38,5 @@ Fonts self-hosted: @fontsource/ibm-plex-sans, @fontsource/ibm-plex-mono (no exte
 - docs/editor-ux-spec.md — full UX spec (modes, slash menu, toolbar, shortcuts, paste, mobile, screen layout)
 - docs/design-tokens.md — colors (light/dark), type, spacing, radius
 - docs/dependencies.md — allowed dependencies and how we work
+- docs/architecture.md — how the shipped code fits together (bundles, registry, editor, storage)
 - PROGRESS.md — milestones and next steps (read this first in every new session)

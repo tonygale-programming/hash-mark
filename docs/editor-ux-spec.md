@@ -25,7 +25,7 @@ portable Markdown. Syntax is learned gradually through hints.
   Selected item = accent fill + outline. Footer shows key hints.
 - Implementation: @codemirror/autocomplete custom source; snippets with tab stops.
 
-Implemented in `src/features/editor/slashMenu.ts` (Math and Diagram arrive with M5):
+Implemented in `src/features/editor/slashMenu.ts` (Math and Diagram arrive with KaTeX and Mermaid, M7):
 - Opens on "/" at the line start, after a space, or after a list/quote marker; never inside code, raw HTML
   or URLs. Typing filters (`searchCommands` in `src/commands/search.ts`): label start, exact keyword
   ("h2", "hr", "todo"), a later word ("list"), keyword start, then letters in order. No match closes it.
@@ -38,9 +38,13 @@ Implemented in `src/features/editor/slashMenu.ts` (Math and Diagram arrive with 
 - Every item is a registry command (Table, Divider, Image and Callout were added for it).
 
 ## 4. Selection toolbar
-- Floating pill above a non-empty selection: Bold, Italic, Strikethrough, Inline code, Link, Highlight | Turn into ▾.
+- Floating pill above a non-empty selection: Bold, Italic, Strikethrough, Inline code, Link | Turn into ▾.
+  No Highlight: `==text==` is not GFM, so Read mode and other apps would not render it.
 - Buttons toggle (Bold again removes **). Tooltip shows name + shortcut.
-- Implementation: CodeMirror showTooltip bound to selection.
+- Turn into: Heading 1–3, Bulleted list, Numbered list, To-do list, Quote, Code block; it names the
+  current block type.
+- Appears after the mouse is released, not while dragging; on touch it sits below the selection.
+- Implementation: CodeMirror showTooltip bound to selection, drawn with the app's React components.
 
 ## 5. Shortcuts
 | Action | Shortcut |
@@ -67,7 +71,7 @@ Implemented in `src/features/editor/smartTyping.ts`.
   level), never making the list loose. Enter on an empty quote line leaves the quote.
 - Auto-close pairs: **, `, (, [ (typing the closer steps over it; Backspace removes an empty pair; only
   closers the editor inserted are stepped over). Not at a "* " bullet, not inside words, not before text.
-  $ auto-close waits for math rendering (M5); selected text is wrapped by * _ ~ ` $ ( [.
+  $ auto-close waits for math rendering (KaTeX, M7); selected text is wrapped by * _ ~ ` $ ( [.
 - Input rules: "[] " / "[ ] " / "[x] " at the line start → task; Enter after an opening ``` fence adds the
   closing fence; Enter after "---" under a paragraph adds a blank line first so it stays a divider.
 
@@ -95,6 +99,8 @@ Implemented in `src/commands/` (types in `types.ts`):
   run(view) → boolean (false = does not apply, the key keeps its default), isActive?(state) for toolbars }.
 - `AppCommand` = same metadata, group App, run(context) for app state (Show syntax, cycle mode).
 - Shortcuts are written "Mod+Shift+8"; the editor keymap and the app-level key handler are generated from them.
+- Surfaces look commands up by id (`editorCommand(id)`, `appCommand(id)`) and take label, icon and
+  shortcut from the registry; nothing defines an action in one surface only.
 - Inline toggles use the Markdown syntax tree, so applying a format inside it removes it.
 - Line commands rewrite only the Markdown prefix of each line (quote, heading, list marker, task box).
 
@@ -104,7 +110,7 @@ Later: optional hosted links (short URL, update/revoke).
 
 ## 13. Screen layout (desktop, from the approved mockup)
 - **Header row:** left — brand `#Hash Mark` (Lucide hash + mono name, as Curly Brace's `{brace}`) and the tagline "Markdown, made readable." Right — ghost links (no border): Shortcuts (keyboard icon), GitHub (code icon), Buy Me a Coffee (cup icon), theme button (moon icon, aria-label).
-- **Toolbar row:** left — `New note` (main action, accent fill), `Open file`, `Sample` (outline pills), segmented control `Write | Split | Read` (selected = accent), toggle `# Show syntax`. Right — `Share link`, `Clear` (outline; Clear is off when the note is empty).
+- **Toolbar row:** left — `New note` (main action, accent fill), `Open file`, `Sample` (outline pills), segmented control `Write | Split | Read` (selected = accent), toggle `# Show syntax`. Right — `Share link`, `Clear` (outline; Clear is off when the note is empty; Share link is off until M3).
 - **Sample / Clear (as Curly Brace):** Sample puts an example document (`src/features/notes/sample.md`) into an
   empty note, or opens it as a new note when the current one has text. Clear empties the note. Both are one
   undoable edit (Mod+Z) and confirm with a toast.
